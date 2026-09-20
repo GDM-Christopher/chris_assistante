@@ -72,6 +72,25 @@ class ProjetModel(BaseModel):
     )
 
 
+class ReunionModel(BaseModel):
+    titre: str = Field(description="Titre de la réunion")
+    date_heure: str = Field(description="Date et créneau horaire de la réunion")
+    organisateur: str = Field(default="Inconnu", description="Organisateur ou émetteur de la réunion")
+    participants: List[str] = Field(default_factory=list, description="Liste des participants ou équipes concernées")
+    sujets_abordes: List[str] = Field(default_factory=list, description="Ordre du jour ou sujets clés à aborder")
+    ce_que_je_dois_preparer: List[str] = Field(
+        default_factory=list,
+        description="Actions concrètes, indicateurs, dossiers ou arbitrages que Christopher doit préparer pour cette réunion"
+    )
+    contexte_emails_chats: str = Field(
+        default="",
+        description="Synthèse du contexte récent (incidents en cours, projets, décisions de Sylvain, Annette ou équipe) en lien direct avec cette réunion"
+    )
+    source_type: Optional[str] = Field(default="Gmail", description="'Gmail' ou 'Google Calendar'")
+    source_url: Optional[str] = Field(default=None, description="Lien direct pour ouvrir l'invitation ou l'événement")
+    source_ref: Optional[str] = Field(default=None, description="Référence ou expéditeur de l'invitation")
+
+
 class DailySummaryModel(BaseModel):
     statut_global: Literal["Vert", "Orange", "Rouge"] = Field(
         default="Vert",
@@ -92,18 +111,22 @@ class DailySummaryModel(BaseModel):
         default_factory=list,
         description="Avancement et décisions par projet"
     )
+    reunions_a_venir: List[ReunionModel] = Field(
+        default_factory=list,
+        description="Réunions à venir, sujets clés et préparation sur-mesure pour Christopher"
+    )
 
 
 # --- System Prompt Gemini ---
 
 SYSTEM_PROMPT = """Tu es un Architecte Cloud, Directeur Technique Adjoint et Superviseur DSI expérimenté.
-Tu reçois l'ENSEMBLE des flux et e-mails récents de la boîte de réception (Gmail) et des salons Google Chat des dernières 24 à 48 heures, SANS AUCUN FILTRE PRÉALABLE.
+Tu reçois l'ENSEMBLE des flux et e-mails récents de la boîte de réception (Gmail), des salons Google Chat des dernières 24 à 48 heures, ainsi que les INVITATIONS ET AGENDAS DE RÉUNIONS À VENIR, SANS AUCUN FILTRE PRÉALABLE.
 
 Ton rôle est d'effectuer le TRI INTELLIGENT DE MANIÈRE TOTALEMENT AUTONOME :
 
 1. CE QUE TU DOIS IGNORER (LE BRUIT) :
    - Les spams, publicités, newsletters commerciales, notifications d'outils marketing.
-   - Les invitations Google Agenda automatiques (ex: "X a accepté la réunion").
+   - Les réponses automatiques de présence d'agenda (ex: "X a accepté la réunion").
    - Les annonces RH génériques, félicitations, ou échanges informels sans portée technique ou projet.
 
 2. CE QUE TU DOIS CAPTURER, ANALYSER ET STRUCTURER :
@@ -121,11 +144,24 @@ Ton rôle est d'effectuer le TRI INTELLIGENT DE MANIÈRE TOTALEMENT AUTONOME :
      * 'Orange' si des flux sont dégradés ou incidents/anomalies projet en cours sans arrêt total.
      * 'Rouge' si un blocage critique paralyse l'activité (magasins, entrepôt, e-commerce).
 
-3. TRAÇABILITÉ DES SOURCES (INDISPENSABLE) :
-   - Pour CHAQUE incident et CHAQUE projet, renseigne impérativement :
-     * source_type : 'Gmail' ou 'Google Chat'.
-     * source_url : Copie EXACTEMENT l'URL fournie dans le header du message source ('Lien direct: ...').
-     * source_ref : Nom de l'expéditeur ou titre du fil (ex: 'Sylvain Cursoux', 'Annette Vandamme', 'OneStock RUN', 'Stambia Support').
+3. RÉUNIONS À VENIR & CE QUE CHRISTOPHER DOIT PRÉPARER (POINT CRUCIAL) :
+   - Identifie toutes les réunions professionnelles à venir (ex: Hebdo - Data/IA - Supply avec Marie Ducorney, points de run, cadrages projets).
+   - Pour chacune d'elles :
+     * titre : Nom clair de la réunion.
+     * date_heure : Date et créneau horaire exacts.
+     * organisateur : Personne ayant convoqué ou pilotant la réunion.
+     * participants : Personnes conviées.
+     * sujets_abordes : Ordre du jour et thématiques abordées.
+     * ce_que_je_dois_preparer : Liste très concrète des actions, chiffres à connaître, dossiers ou arbitrages que Christopher Gilleron doit avoir préparés avant la réunion (ex: statut de la MEP du stock mini magasin, point d'ingestion WinWig -> Snowflake, réponse à apporter à la règle Annette sur la référence H26ABI.T rouge).
+     * contexte_emails_chats : Résumé synthétique de tous les éléments extraits des e-mails et chats récents en rapport avec les thèmes de cette réunion pour donner à Christopher tout le contexte d'un coup d'œil.
+     * source_url : Lien direct vers l'invitation ou l'e-mail source.
+     * source_ref : Nom de l'émetteur.
+
+4. TRAÇABILITÉ DES SOURCES :
+   - Pour CHAQUE incident, CHAQUE projet et CHAQUE réunion, renseigne impérativement :
+     * source_type : 'Gmail' ou 'Google Chat' ou 'Google Calendar'.
+     * source_url : Copie EXACTEMENT l'URL fournie dans le header du message correspondant ('Lien direct: ...').
+     * source_ref : Nom de l'expéditeur ou titre du fil.
 
 Réponds STRICTEMENT au format JSON valide conforme au schéma imposé. Aucun texte introductif, aucune explication hors du JSON.
 """
@@ -146,8 +182,9 @@ def clean_json_response(raw_text: str) -> str:
 def analyze_daily_communications(
     messages_payload: List[Dict[str, Any]],
     date_str: str,
+    meetings_payload: Optional[List[Dict[str, Any]]] = None,
 ) -> Dict[str, Any]:
-    """Analyse les messages bruts via Gemini 1.5 Pro et renvoie un dictionnaire structuré."""
+    """Analyse les messages bruts et réunions via Gemini et renvoie un dictionnaire structuré."""
     if not GEMINI_API_KEY:
         raise ValueError(
             "GEMINI_API_KEY est manquante dans les variables d'environnement. "
@@ -174,7 +211,36 @@ def analyze_daily_communications(
         )
 
     full_text_input = "\n\n".join(formatted_context)
-    user_prompt = f"Date du rapport : {date_str}\n\nVoici les échanges et alertes techniques des dernières 24 heures :\n\n{full_text_input}"
+
+    # Ajout du bloc Réunions & Invitations
+    if meetings_payload:
+        formatted_meetings = []
+        for idx, m in enumerate(meetings_payload, start=1):
+            src = m.get("source", "Calendrier")
+            sender = m.get("expediteur") or m.get("organisateur", "Inconnu")
+            date_m = m.get("date_heure") or m.get("date", "")
+            sujet = m.get("sujet", "Réunion")
+            content = m.get("contenu", "")
+            url = m.get("url", "")
+
+            formatted_meetings.append(
+                f"--- [Invitation Réunion #{idx} | {src} | Date/Heure: {date_m} | Lien direct: {url}] ---\n"
+                f"De / Organisateur : {sender}\n"
+                f"Titre / Objet : {sujet}\n"
+                f"Détails / Description :\n{content}\n"
+            )
+        full_text_input += (
+            "\n\n=================================================================\n"
+            "=== INVITATIONS ET AGENDAS DES RÉUNIONS À VENIR ===\n"
+            "=================================================================\n\n"
+            + "\n\n".join(formatted_meetings)
+        )
+
+    user_prompt = (
+        f"Date du rapport : {date_str}\n\n"
+        f"Voici l'ensemble des échanges, alertes, projets récents et réunions à venir :\n\n"
+        f"{full_text_input}"
+    )
 
     try:
         # Initialisation du client officiel Google GenAI

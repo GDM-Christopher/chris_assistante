@@ -27,6 +27,7 @@ from backend.config import GMAIL_LABELS_FILTER, GMAIL_LOOKBACK_HOURS
 from backend.gemini_analyzer import analyze_daily_communications
 from backend.gmail_client import fetch_recent_emails
 from backend.google_auth import get_google_credentials
+from backend.meetings_client import fetch_upcoming_meetings
 from backend.mock_data import MOCK_STRUCTURED_SUMMARY, MOCK_SUPERVISION_MESSAGES
 from backend.supabase_client import upsert_daily_report
 
@@ -88,6 +89,9 @@ def run_pipeline(
             chat_messages = fetch_recent_chat_messages(creds, hours=hours)
             raw_messages.extend(chat_messages)
 
+            # Récupération Réunions & Invitations d'agenda
+            upcoming_meetings = fetch_upcoming_meetings(creds)
+
     logger.info(f"Total de {len(raw_messages)} messages bruts collectés.")
 
     if not raw_messages:
@@ -101,12 +105,17 @@ def run_pipeline(
             "alertes": [],
             "incidents": [],
             "projets": [],
+            "reunions_a_venir": [],
         }
     else:
         # 3. Analyse via Gemini 1.5 Pro
-        logger.info("Envoi des messages à Gemini 1.5 Pro pour extraction structurée...")
+        logger.info("Envoi des messages et réunions à Gemini pour extraction structurée...")
         try:
-            summary = analyze_daily_communications(raw_messages, date_str=target_date)
+            summary = analyze_daily_communications(
+                raw_messages,
+                date_str=target_date,
+                meetings_payload=upcoming_meetings if not mock_mode else None,
+            )
         except Exception as e:
             logger.error(f"Erreur d'analyse Gemini : {e}")
             if mock_mode:
@@ -119,7 +128,8 @@ def run_pipeline(
     logger.info(f"Synthèse IA générée : Statut={summary.get('statut_global')}, "
                 f"Alertes={len(summary.get('alertes', []))}, "
                 f"Incidents={len(summary.get('incidents', []))}, "
-                f"Projets={len(summary.get('projets', []))}")
+                f"Projets={len(summary.get('projets', []))}, "
+                f"Réunions={len(summary.get('reunions_a_venir', []))}")
 
     # Sauvegarde locale automatique en cache (permet un affichage immédiat dans Streamlit)
     try:
@@ -133,7 +143,10 @@ def run_pipeline(
 
     if dry_run:
         logger.info("Mode --dry-run activé : Aucune écriture dans Supabase. Résultat ci-dessous :")
-        print(json.dumps(summary, indent=2, ensure_ascii=False))
+        try:
+            print(json.dumps(summary, indent=2, ensure_ascii=False))
+        except UnicodeEncodeError:
+            print(json.dumps(summary, indent=2, ensure_ascii=True))
         return True
 
     # 5. Persistance Supabase

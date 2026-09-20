@@ -322,6 +322,7 @@ resume_executif = raw_summary.get("resume_executif", "Aucun résumé disponible.
 alertes = raw_summary.get("alertes", [])
 incidents = raw_summary.get("incidents", [])
 projets = raw_summary.get("projets", [])
+reunions_a_venir = raw_summary.get("reunions_a_venir", [])
 
 
 # --- 4. Extraction dynamique des filtres BDD, Flux & Projets ---
@@ -355,11 +356,12 @@ with st.sidebar:
 
 
 # --- 5. Navigation par Onglets ---
-tab1, tab2, tab3, tab4 = st.tabs(
+tab1, tab2, tab3, tab4, tab5 = st.tabs(
     [
         "📊 Vue d'ensemble & Alertes",
         "🚨 Incidents & Résolutions Techniques",
         "🚀 Avancement par Projet",
+        "📅 Réunions à Venir & Préparations",
         "🧠 Copilote DSI & Décryptage Tech",
     ]
 )
@@ -723,9 +725,139 @@ with tab3:
 
 
 # ==============================================================================
-# ONGLET 4 : COPILOTE DSI & VULGARISATION TECHNIQUE
+# ONGLET 4 : RÉUNIONS À VENIR & PRÉPARATIONS
 # ==============================================================================
 with tab4:
+    st.subheader("📅 Réunions à Venir & Préparation Intelligente")
+    st.markdown(
+        "Ce module identifie vos **réunions clés à venir** (invitations d'agendas, points d'équipe, comités), "
+        "détaille les **sujets à l'ordre du jour** et croise automatiquement les **e-mails et chats récents** "
+        "pour vous lister exactement **ce que vous devez préparer** (arbitrages, indicateurs, décisions récentes)."
+    )
+
+    if not reunions_a_venir:
+        st.info("Aucune réunion formelle répertoriée pour cette période dans les invitations d'agenda analysées.")
+    else:
+        st.write(f"**{len(reunions_a_venir)}** réunion(s) et point(s) d'équipe identifié(s) :")
+
+        for idx, r in enumerate(reunions_a_venir, start=1):
+            titre = r.get("titre", "Réunion sans titre")
+            date_h = r.get("date_heure", "Date non précisée")
+            organisateur = r.get("organisateur", "Inconnu")
+            participants = r.get("participants", [])
+            sujets = r.get("sujets_abordes", [])
+            a_preparer = r.get("ce_que_je_dois_preparer", [])
+            contexte = r.get("contexte_emails_chats", "")
+            r_source_url = r.get("source_url")
+            r_source_ref = r.get("source_ref", "")
+
+            with st.container():
+                st.markdown(
+                    f"""
+                    <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 22px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+                            <div>
+                                <span style="background: #e0f2fe; color: #0369a1; padding: 4px 10px; border-radius: 6px; font-weight: 600; font-size: 0.82rem;">📅 {date_h}</span>
+                                <h3 style="margin: 8px 0 4px 0; color: #0f172a; font-size: 1.2rem;">#{idx}. {titre}</h3>
+                                <span style="color: #64748b; font-size: 0.9rem;">👤 Organisateur / Contact : <strong>{organisateur}</strong></span>
+                            </div>
+                        </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                if participants:
+                    part_tags = "".join([f'<span class="tech-tag" style="background:#f8fafc; color:#334155;">👥 {p}</span>' for p in participants])
+                    st.markdown(f"**Participants :** {part_tags}", unsafe_allow_html=True)
+
+                col_r1, col_r2 = st.columns([1, 1.2])
+
+                with col_r1:
+                    st.markdown("##### 📌 Sujets & Ordre du Jour")
+                    if sujets:
+                        for s in sujets:
+                            st.markdown(f"- {s}")
+                    else:
+                        st.markdown("*Ordre du jour à affiner en début de séance.*")
+
+                with col_r2:
+                    st.markdown("##### 🎯 Ce que Christopher doit préparer")
+                    if a_preparer:
+                        for item in a_preparer:
+                            st.markdown(
+                                f"""
+                                <div style="background: #fffbeb; border-left: 3px solid #f59e0b; padding: 8px 12px; border-radius: 4px; margin-bottom: 8px; font-size: 0.88rem; color: #92400e;">
+                                    👉 {item}
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
+                    else:
+                        st.markdown("*Aucune action préalable identifiée.*")
+
+                if contexte:
+                    st.markdown(
+                        f"""
+                        <div style="margin-top: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px;">
+                            <strong style="color: #0369a1;">🧠 Contexte récent extrait des Mails & Chats :</strong>
+                            <p style="margin: 6px 0 0 0; color: #334155; font-size: 0.9rem; line-height: 1.5;">{contexte}</p>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                if r_source_url:
+                    st.markdown(
+                        f"""
+                        <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                            <a href="{r_source_url}" target="_blank" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:#eff6ff; color:#1d4ed8; padding:6px 14px; border-radius:6px; font-weight:600; font-size:0.84rem; border:1px solid #bfdbfe;">
+                                ✉️ Ouvrir l'invitation dans Gmail ({r_source_ref or organisateur}) ↗
+                            </a>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                st.markdown("</div>", unsafe_allow_html=True)
+
+                # Simulateur / Briefing IA interactif pour chaque réunion
+                with st.expander(f"🤖 Poser une question au Copilote IA pour préparer '{titre}'"):
+                    custom_q = st.text_input(
+                        f"Que voulez-vous préparer pour la réunion '{titre}' ?",
+                        placeholder="Ex: Rédige mon pitch de 1 minute / Quelles questions pièges peuvent survenir ?",
+                        key=f"q_reunion_{idx}",
+                    )
+                    if st.button(f"Générer le briefing IA pour '{titre}'", key=f"btn_reunion_{idx}"):
+                        with st.spinner("Génération du briefing en croisant les e-mails et chats..."):
+                            prompt_reunion = f"""
+                            Tu es le conseiller stratégique et technique de Christopher Gilleron à la DSI.
+                            Il prépare la réunion suivante :
+                            - Titre : {titre}
+                            - Date : {date_h}
+                            - Organisateur : {organisateur}
+                            - Sujets : {', '.join(sujets)}
+                            - Actions à préparer : {', '.join(a_preparer)}
+                            - Contexte e-mails/chats : {contexte}
+
+                            Question spécifique de Christopher : "{custom_q or 'Rédige une fiche de briefing structurée avec le pitch d introduction, les 3 points clés à aborder et les réponses aux objections possibles'}"
+
+                            Réponds de façon synthétique, directe et percutante.
+                            """
+                            reponse_reunion = ask_gemini_copilot(prompt_reunion)
+                            st.markdown(
+                                f"""
+                                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 16px; color: #166534; font-size: 0.92rem; margin-top: 10px;">
+                                    {reponse_reunion}
+                                </div>
+                                """,
+                                unsafe_allow_html=True,
+                            )
+
+
+# ==============================================================================
+# ONGLET 5 : COPILOTE DSI & VULGARISATION TECHNIQUE
+# ==============================================================================
+with tab5:
     st.subheader("🧠 Copilote DSI & Décryptage Pédagogique du SI")
     st.markdown(
         "Ce module intelligent analyse l'ensemble des activités de la DSI pour vous donner "
