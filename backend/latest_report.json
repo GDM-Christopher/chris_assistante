@@ -1,57 +1,82 @@
 {
   "report_date": "2026-09-20",
   "statut_global": "Orange",
-  "resume_executif": "La journée a été marquée par des incidents persistants sur les flux de production. Le flux Stambia ECOM_SF_ORDER génère des rejets de commandes en continu, et une erreur d'import de données OneStock liée à des endpoints manquants a été signalée. Ces incidents sont en cours d'investigation. Des opérations de routine DSI, incluant l'envoi de fichiers de secours et de réassort (15 578 pièces), ont été effectuées.",
+  "resume_executif": "L'activité des dernières 24-48 heures est marquée par des rejets persistants de commandes en production via Stambia et des erreurs d'import de données dans OneStock, indiquant une dégradation des flux critiques. Le projet d'application \"Proposition d'Implantation\" sur Snowflake a vu plusieurs évolutions livrées et des décisions clés pour la mise en production du stock mini magasin. Un incident local sur un TPE de magasin est également en cours de traitement.",
   "alertes": [
-    "Rejets continus de commandes ECOM_SF_ORDER en production (table stambia.R_ORDER_GLOBAL)",
-    "Erreurs d'import de données OneStock (endpoints does not exist pour les IDs 10267, 00899, 10268)"
+    "Rejets persistants de commandes ECOM_SF_ORDER en PRODUCTION via Stambia, impactant l'intégration des nouvelles commandes.",
+    "Erreurs récurrentes lors de l'import de données dans OneStock, signalant des endpoints non existants pour certains IDs."
   ],
   "incidents": [
     {
-      "titre": "Rejet continu de commandes ECOM_SF_ORDER",
-      "description": "Le flux ECOM_SF_ORDER en production génère des rejets de nouvelles commandes de manière répétée et continue sur les dernières 24h.",
+      "titre": "Rejets persistants de commandes ECOM_SF_ORDER en PRODUCTION",
+      "description": "De multiples rejets ont été constatés lors de l'exécution du flux ECOM_SF_ORDER en production, impactant l'intégration de nouvelles commandes. Les rejets sont récurrents sur les dernières 24-48h.",
       "bdd_impactees": [
-        "PRODUCTION",
         "stambia.R_ORDER_GLOBAL"
       ],
       "flux_impactes": [
         "ECOM_SF_ORDER (via Stambia)"
       ],
-      "cause_racine": "Cause racine en cours d'investigation : anomalie de structure des messages de commandes e-commerce ou incohérence de référentiel bloquant l'intégration.",
-      "solution_technique": "Investigation des causes des rejets et correction du mapping de flux ECOM_SF_ORDER. Suivi des rejets via la requête SQL : SELECT * FROM stambia.R_ORDER_GLOBAL ORDER BY date_rejet DESC;",
+      "cause_racine": "Cause non précisée, investigation nécessaire sur l'origine des rejets (données, configuration, etc.).",
+      "solution_technique": "Analyse approfondie des logs et des données en rejet, correction des anomalies identifiées et relance des commandes.",
       "statut": "En cours"
     },
     {
-      "titre": "Erreur d'import de données OneStock (endpoints does not exist)",
-      "description": "Problèmes détectés lors de l'import de données dans OneStock, avec des erreurs 'endpoints does not exist' pour les IDs 10267, 00899, 10268.",
+      "titre": "Erreurs d'import de données OneStock",
+      "description": "Des problèmes ont été détectés lors de l'import de données dans OneStock, signalant des \"endpoints does not exist\" pour plusieurs IDs (ex: 10267, 00899, 10268).",
       "bdd_impactees": [
-        "OneStock"
+        "Non précisée (interne OneStock)"
       ],
       "flux_impactes": [
         "OneStock via RUN (import de données)"
       ],
-      "cause_racine": "Configuration manquante ou incorrecte des points d'accès (endpoints) pour les données importées dans OneStock.",
-      "solution_technique": "Vérification des fichiers de commandes reçus et contact du support OneStock. Correction de la configuration des endpoints manquants ou obsolètes.",
+      "cause_racine": "Endpoints manquants ou mal configurés pour certains identifiants lors de l'import.",
+      "solution_technique": "Vérification des fichiers source, de la configuration des endpoints OneStock et contact du support si persistant.",
+      "statut": "En cours"
+    },
+    {
+      "titre": "Problème d'impression TPE Caisse 1 Magasin ROUEN-CV_538",
+      "description": "L'impression du TPE de la caisse 1 du magasin ROUEN-CV_538 est illisible, rendant la télécollecte difficile.",
+      "bdd_impactees": [],
+      "flux_impactes": [
+        "Télécollecte TPE"
+      ],
+      "cause_racine": "Dysfonctionnement matériel de l'imprimante du TPE.",
+      "solution_technique": "Intervention technique pour réparation ou remplacement du TPE.",
       "statut": "En cours"
     }
   ],
   "projets": [
     {
-      "nom_projet": "PCI - Logistique GDM",
-      "libelle": "Notification_DSI",
+      "nom_projet": "Proposition d'Implantation & Gestion Casse",
+      "libelle": "Snowflake",
       "actions_realisees": [
-        "Envoi des fichiers de sauvegarde de secours (stocks emplacements Logys GDM)",
-        "Génération des listes magasins avec jour de départ et transporteur prévu",
-        "Calcul du TOP 100 des ventes des 7 derniers jours",
-        "Génération des ventes de la veille pour le réassort 'vente pour vente'"
+        "Implémentation de filtres \"Statut prévisionnel\" et indicateur de fraîcheur des données.",
+        "Améliorations sur la gestion de la casse (magasins avec stock mini > 0).",
+        "Repositionnement de la colonne \"Contient Pack\" et ajout de la sélection multiple par glissement.",
+        "Ajout d'indicateurs de synthèse Casse.",
+        "Révision du rafraîchissement des stocks (données matin avant 8h, second lancement midi en cours de mise en place).",
+        "Revue de code pour industrialisation du stock mini magasin effectuée, ajustements en cours (vues Bronze dédupliquées, rattachement statut magasin actif, nettoyage tests, validation qualification)."
+      ],
+      "decisions": [
+        "Mise en production de l'industrialisation du stock mini magasin prévue pour le mardi 22/09.",
+        "Correction à apporter pour le cas H26ABI.T rouge : si zéro ventes réseau et stock+transit+en cours de prep est nul ou négatif, la RC doit apparaître dans la proposition.",
+        "Priorité sur la stabilisation du confort de saisie / rechargement du tableau."
+      ]
+    },
+    {
+      "nom_projet": "Exploration/Mise en place Supabase",
+      "libelle": "Supabase",
+      "actions_realisees": [
+        "Christopher Gilleron a créé un projet Supabase (\"GDM-Christopher's Project\").",
+        "Autorisation d'une application OAuth tierce (Supabase) et ajout d'un Personal Access Token (classic) \"Antigravity IDE (repo workflow)\" sur le compte GitHub de GDM-Christopher."
       ],
       "decisions": []
     },
     {
-      "nom_projet": "Opérations Quotidiennes / Réassort",
+      "nom_projet": "PCI - Logistique GDM",
       "libelle": "Notification_DSI",
       "actions_realisees": [
-        "Envoi du fichier de réassort du 19/09/2026, totalisant 15 578 pièces conformes"
+        "Génération et mise à disposition des fichiers de sauvegarde en cas de problème informatique (stocks emplacements Logys GDM, magasins avec jour de départ et transporteur, TOP 100 ventes, ventes veille pour réassort)."
       ],
       "decisions": []
     }

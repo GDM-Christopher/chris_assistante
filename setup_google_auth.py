@@ -31,13 +31,19 @@ def main():
 
     creds_file = Path("credentials.json")
     if not creds_file.exists():
-        print("\n❌ Fichier 'credentials.json' introuvable dans le dossier actuel.")
-        print("Étapes à suivre :")
-        print("1. Rendez-vous sur Google Cloud Console : https://console.cloud.google.com/")
-        print("2. Créez des identifiants 'ID client OAuth' (Type : Application de bureau).")
-        print("3. Téléchargez le JSON et enregistrez-le sous le nom 'credentials.json' ici.")
-        print("4. Relancez ensuite ce script : python setup_google_auth.py\n")
-        sys.exit(1)
+        # Recherche d'un fichier client_secret*.json téléchargé par défaut depuis Google Cloud
+        candidates = list(Path(".").glob("client_secret*.json"))
+        if candidates:
+            creds_file = candidates[0]
+            print(f"\nℹ️ Fichier détecté automatiquement : {creds_file.name}")
+        else:
+            print("\n❌ Fichier 'credentials.json' introuvable dans le dossier actuel.")
+            print("Étapes à suivre :")
+            print("1. Rendez-vous sur Google Cloud Console : https://console.cloud.google.com/")
+            print("2. Créez des identifiants 'ID client OAuth' (Type : Application de bureau).")
+            print("3. Téléchargez le JSON et enregistrez-le sous le nom 'credentials.json' ici.")
+            print("4. Relancez ensuite ce script : .\\.venv\\Scripts\\python setup_google_auth.py\n")
+            sys.exit(1)
 
     print("\nLancement du serveur d'autorisation local...")
     print("Votre navigateur va s'ouvrir pour vous permettre d'autoriser l'application.\n")

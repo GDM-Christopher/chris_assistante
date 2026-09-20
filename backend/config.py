@@ -37,16 +37,19 @@ GOOGLE_SCOPES = [
 ]
 
 # --- Paramètres Ingestion ---
+GMAIL_INGEST_ALL = os.getenv("GMAIL_INGEST_ALL", "true").lower() in ("true", "1", "yes")
+GMAIL_MAX_RESULTS = int(os.getenv("GMAIL_MAX_RESULTS", "100"))
+
 GMAIL_LABELS_FILTER = [
     label.strip()
     for label in os.getenv(
         "GMAIL_LABELS_FILTER",
-        "OneStock via RUN, Notification_DSI, OPCON, trt_stambia",
+        "OneStock, Notification_DSI, OPCON, Stambia, Supply, Snowflake, Implantation, WinWig",
     ).split(",")
     if label.strip()
 ]
 
-GMAIL_LOOKBACK_HOURS = int(os.getenv("GMAIL_LOOKBACK_HOURS", "24"))
+GMAIL_LOOKBACK_HOURS = int(os.getenv("GMAIL_LOOKBACK_HOURS", "48"))
 GOOGLE_CHAT_SPACES = [
     space.strip()
     for space in os.getenv("GOOGLE_CHAT_SPACES", "").split(",")

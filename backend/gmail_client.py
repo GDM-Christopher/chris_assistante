@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Optional
 from bs4 import BeautifulSoup
 from googleapiclient.discovery import build
 
-from backend.config import GMAIL_LABELS_FILTER
+from backend.config import GMAIL_INGEST_ALL, GMAIL_LABELS_FILTER, GMAIL_MAX_RESULTS
 
 logger = logging.getLogger("GmailClient")
 
@@ -69,52 +69,55 @@ def fetch_recent_emails(
     creds,
     hours: int = 24,
     labels: Optional[List[str]] = None,
-    max_results: int = 50,
+    max_results: Optional[int] = None,
 ) -> List[Dict[str, Any]]:
-    """Récupère les e-mails des dernières 24h ciblant les libellés de supervision.
+    """Récupère les e-mails des dernières 24h.
 
-    Labels cibles typiques : 'OneStock via RUN', 'Notification_DSI', 'OPCON', 'trt_stambia'.
+    Si GMAIL_INGEST_ALL=True (par défaut), aspire tous les e-mails de la boîte (hors corbeille/spam)
+    afin que l'IA Gemini réalise elle-même le tri intelligent sans rien louper (Supply, Snowflake, OneStock, etc.).
     """
     if not creds:
         logger.warning("Identifiants Google absents. Ingestion Gmail annulée.")
         return []
 
-    target_labels = labels or GMAIL_LABELS_FILTER
-    logger.info(f"Recherche Gmail sur les dernières {hours}h avec filtres : {target_labels}")
+    limit = max_results or GMAIL_MAX_RESULTS
+    days_lookback = max(1, (hours + 23) // 24)
 
     try:
         service = build("gmail", "v1", credentials=creds, cache_discovery=False)
 
-        # Construction de la requête temporelle et thématique
-        # newer_than:1d ou recherche par labels
-        query_parts = []
-        label_queries = []
-        for lbl in target_labels:
-            clean_lbl = lbl.replace('"', "").strip()
-            label_queries.append(f'label:"{clean_lbl}"')
-            label_queries.append(f'"{clean_lbl}"')
-
-        combined_label_query = " OR ".join(label_queries)
-        query = f"newer_than:{max(1, hours // 24)}d AND ({combined_label_query})"
+        if GMAIL_INGEST_ALL:
+            query = f"newer_than:{days_lookback}d -in:trash -in:spam"
+            logger.info(f"Mode Ingestion Globale activé : Tous les e-mails récents seront analysés via : {query}")
+        else:
+            target_labels = labels or GMAIL_LABELS_FILTER
+            logger.info(f"Recherche Gmail avec filtres restreints : {target_labels}")
+            label_queries = []
+            for lbl in target_labels:
+                clean_lbl = lbl.replace('"', "").strip()
+                label_queries.append(f'label:"{clean_lbl}"')
+                label_queries.append(f'"{clean_lbl}"')
+            combined_label_query = " OR ".join(label_queries)
+            query = f"newer_than:{days_lookback}d AND ({combined_label_query})"
 
         logger.info(f"Requête Gmail exécutée : {query}")
 
         response = (
             service.users()
             .messages()
-            .list(userId="me", q=query, maxResults=max_results)
+            .list(userId="me", q=query, maxResults=limit)
             .execute()
         )
 
         messages = response.get("messages", [])
-        if not messages:
-            # Fallback plus large si les labels personnalisés ne sont pas configurés à l'identique
-            fallback_query = f"newer_than:{max(1, hours // 24)}d (OneStock OR DSI OR OPCON OR Stambia OR Alerte OR Incident)"
+        if not messages and not GMAIL_INGEST_ALL:
+            # Fallback plus large si filtre restreint vide
+            fallback_query = f"newer_than:{days_lookback}d (OneStock OR DSI OR OPCON OR Stambia OR Snowflake OR Supply OR Incident)"
             logger.info(f"Aucun message avec labels stricts. Tentative avec fallback : {fallback_query}")
             fallback_resp = (
                 service.users()
                 .messages()
-                .list(userId="me", q=fallback_query, maxResults=max_results)
+                .list(userId="me", q=fallback_query, maxResults=limit)
                 .execute()
             )
             messages = fallback_resp.get("messages", [])
