@@ -1,5 +1,5 @@
 # Configuration Supabase CLI
-project_id = ""
+project_id = "lhqvjgguwhaowbhflklh"
 
 [api]
 enabled = true
