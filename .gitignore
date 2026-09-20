@@ -1,0 +1,41 @@
+# Environnement virtuel Python
+.venv/
+venv/
+env/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Fichiers de configuration sensibles & Secrets
+.env
+.env.local
+.env.*.local
+.streamlit/secrets.toml
+
+# Identifiants et clés d'accès Google
+credentials.json
+token.json
+service_account*.json
+client_secret*.json
+*.pem
+*.key
+
+# Fichiers OS & IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & temporaires
+*.log
+scratch/
+tmp/
+temp/
