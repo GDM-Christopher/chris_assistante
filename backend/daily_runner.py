@@ -121,6 +121,16 @@ def run_pipeline(
                 f"Incidents={len(summary.get('incidents', []))}, "
                 f"Projets={len(summary.get('projets', []))}")
 
+    # Sauvegarde locale automatique en cache (permet un affichage immédiat dans Streamlit)
+    try:
+        cache_path = PROJECT_ROOT / "backend" / "latest_report.json"
+        payload_to_cache = {"report_date": target_date, **summary}
+        with open(cache_path, "w", encoding="utf-8") as f:
+            json.dump(payload_to_cache, f, indent=2, ensure_ascii=False)
+        logger.info(f"Rapport sauvegardé localement en cache dans : {cache_path}")
+    except Exception as cache_err:
+        logger.warning(f"Avertissement cache local : {cache_err}")
+
     if dry_run:
         logger.info("Mode --dry-run activé : Aucune écriture dans Supabase. Résultat ci-dessous :")
         print(json.dumps(summary, indent=2, ensure_ascii=False))

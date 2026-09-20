@@ -1,0 +1,59 @@
+{
+  "report_date": "2026-09-20",
+  "statut_global": "Orange",
+  "resume_executif": "La journée a été marquée par des incidents persistants sur les flux de production. Le flux Stambia ECOM_SF_ORDER génère des rejets de commandes en continu, et une erreur d'import de données OneStock liée à des endpoints manquants a été signalée. Ces incidents sont en cours d'investigation. Des opérations de routine DSI, incluant l'envoi de fichiers de secours et de réassort (15 578 pièces), ont été effectuées.",
+  "alertes": [
+    "Rejets continus de commandes ECOM_SF_ORDER en production (table stambia.R_ORDER_GLOBAL)",
+    "Erreurs d'import de données OneStock (endpoints does not exist pour les IDs 10267, 00899, 10268)"
+  ],
+  "incidents": [
+    {
+      "titre": "Rejet continu de commandes ECOM_SF_ORDER",
+      "description": "Le flux ECOM_SF_ORDER en production génère des rejets de nouvelles commandes de manière répétée et continue sur les dernières 24h.",
+      "bdd_impactees": [
+        "PRODUCTION",
+        "stambia.R_ORDER_GLOBAL"
+      ],
+      "flux_impactes": [
+        "ECOM_SF_ORDER (via Stambia)"
+      ],
+      "cause_racine": "Cause racine en cours d'investigation : anomalie de structure des messages de commandes e-commerce ou incohérence de référentiel bloquant l'intégration.",
+      "solution_technique": "Investigation des causes des rejets et correction du mapping de flux ECOM_SF_ORDER. Suivi des rejets via la requête SQL : SELECT * FROM stambia.R_ORDER_GLOBAL ORDER BY date_rejet DESC;",
+      "statut": "En cours"
+    },
+    {
+      "titre": "Erreur d'import de données OneStock (endpoints does not exist)",
+      "description": "Problèmes détectés lors de l'import de données dans OneStock, avec des erreurs 'endpoints does not exist' pour les IDs 10267, 00899, 10268.",
+      "bdd_impactees": [
+        "OneStock"
+      ],
+      "flux_impactes": [
+        "OneStock via RUN (import de données)"
+      ],
+      "cause_racine": "Configuration manquante ou incorrecte des points d'accès (endpoints) pour les données importées dans OneStock.",
+      "solution_technique": "Vérification des fichiers de commandes reçus et contact du support OneStock. Correction de la configuration des endpoints manquants ou obsolètes.",
+      "statut": "En cours"
+    }
+  ],
+  "projets": [
+    {
+      "nom_projet": "PCI - Logistique GDM",
+      "libelle": "Notification_DSI",
+      "actions_realisees": [
+        "Envoi des fichiers de sauvegarde de secours (stocks emplacements Logys GDM)",
+        "Génération des listes magasins avec jour de départ et transporteur prévu",
+        "Calcul du TOP 100 des ventes des 7 derniers jours",
+        "Génération des ventes de la veille pour le réassort 'vente pour vente'"
+      ],
+      "decisions": []
+    },
+    {
+      "nom_projet": "Opérations Quotidiennes / Réassort",
+      "libelle": "Notification_DSI",
+      "actions_realisees": [
+        "Envoi du fichier de réassort du 19/09/2026, totalisant 15 578 pièces conformes"
+      ],
+      "decisions": []
+    }
+  ]
+}

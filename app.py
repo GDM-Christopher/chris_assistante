@@ -11,6 +11,7 @@ import pandas as pd
 import plotly.express as px
 import streamlit as st
 
+from backend.config import GEMINI_API_KEY, GEMINI_MODEL
 from backend.mock_data import MOCK_STRUCTURED_SUMMARY
 from backend.supabase_client import (
     get_available_dates,
@@ -175,6 +176,37 @@ st.markdown(
 )
 
 
+def ask_gemini_copilot(prompt: str, system_instruction: str = None) -> str:
+    """Interroge Gemini pour vulgariser, synthétiser ou expliquer un aspect technique."""
+    if not GEMINI_API_KEY:
+        return "⚠️ Clé GEMINI_API_KEY non configurée. Définissez-la dans votre fichier .env pour activer le Copilote IA."
+    try:
+        from google import genai
+        from google.genai import types
+
+        client = genai.Client(api_key=GEMINI_API_KEY)
+        candidate_models = [GEMINI_MODEL, "gemini-2.5-flash", "gemini-flash-latest"]
+        for m in candidate_models:
+            if not m:
+                continue
+            try:
+                config_kwargs = {"temperature": 0.3}
+                if system_instruction:
+                    config_kwargs["system_instruction"] = system_instruction
+                resp = client.models.generate_content(
+                    model=m,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(**config_kwargs),
+                )
+                if resp and resp.text:
+                    return resp.text
+            except Exception:
+                continue
+        return "⚠️ L'API Gemini n'a pas pu traiter cette demande actuellement."
+    except Exception as e:
+        return f"Erreur de communication avec l'assistant IA : {e}"
+
+
 # --- 1. En-tête Principal ---
 st.markdown(
     """
@@ -249,15 +281,27 @@ current_report = None
 if selected_date_str and supabase_client:
     current_report = get_report_by_date(selected_date_str)
 
-# Fallback si Supabase est vide ou non connecté
+# Si Supabase n'a pas encore de rapport, charger en priorité le rapport réel extrait
+if not current_report:
+    local_cache_path = os.path.join(os.path.dirname(__file__), "backend", "latest_report.json")
+    if os.path.exists(local_cache_path):
+        try:
+            with open(local_cache_path, "r", encoding="utf-8") as f:
+                cached_data = json.load(f)
+                current_report = {
+                    "report_date": cached_data.get("report_date", selected_date_str),
+                    "raw_summary": cached_data,
+                }
+        except Exception:
+            pass
+
+# Fallback vers données de démo si aucun rapport n'existe
 if not current_report:
     if not available_dates:
-        st.warning(
-            "⚠️ Aucun rapport n'a été trouvé dans votre base de données Supabase pour cette date.\n\n"
-            "👉 Cliquez sur **'Charger les données de démo dans Supabase'** dans la barre latérale "
-            "ou lancez la commande `python backend/daily_runner.py --mock` pour initialiser la base."
+        st.info(
+            "ℹ️ Affichage des données d'exemple. "
+            "Lancez `python backend/daily_runner.py` pour actualiser avec vos e-mails et salons récents."
         )
-        # Affichage direct du mock pour offrir une prévisualisation immédiate
         current_report = {
             "report_date": selected_date_str or datetime.date.today().isoformat(),
             "raw_summary": MOCK_STRUCTURED_SUMMARY,
@@ -311,11 +355,12 @@ with st.sidebar:
 
 
 # --- 5. Navigation par Onglets ---
-tab1, tab2, tab3 = st.tabs(
+tab1, tab2, tab3, tab4 = st.tabs(
     [
         "📊 Vue d'ensemble & Alertes",
         "🚨 Incidents & Résolutions Techniques",
         "🚀 Avancement par Projet",
+        "🧠 Copilote DSI & Décryptage Tech",
     ]
 )
 
@@ -636,6 +681,123 @@ with tab3:
                             )
                     else:
                         st.markdown("*Aucune décision arbitrée.*")
+
+
+# ==============================================================================
+# ONGLET 4 : COPILOTE DSI & VULGARISATION TECHNIQUE
+# ==============================================================================
+with tab4:
+    st.subheader("🧠 Copilote DSI & Décryptage Pédagogique du SI")
+    st.markdown(
+        "Ce module intelligent analyse l'ensemble des activités de la DSI pour vous donner "
+        "une **vision globale et synthétique**, tout en **décryptant le jargon technique** "
+        "en langage clair et accessible sans prérequis informatique."
+    )
+
+    # 1. La Photo Globale de la DSI
+    st.markdown("---")
+    st.markdown("### 📸 1. La Photo Globale de la DSI (Vue Décisionnelle & Métier)")
+    st.caption("Générez une synthèse macroscopique claire pour comprendre les impacts sur les magasins et le business.")
+
+    if st.button("✨ Générer la Photo Globale du SI (Comité de Direction)", type="primary"):
+        with st.spinner("Analyse globale en cours avec Gemini..."):
+            prompt_photo = f"""
+            À partir du rapport technique suivant de la DSI du {selected_date_str} :
+            {json.dumps(raw_summary, ensure_ascii=False, indent=2)}
+
+            Rédige un compte-rendu exécutif clair, percutant et non-jargonné structuré ainsi :
+            1. 🌟 EN 3 PHRASES : La photo générale de la journée (ce qui a marché, ce qui a coincé).
+            2. 🏬 IMPACTS COMMERCES & MAGASINS : Conséquences concrètes sur les ventes, les stocks et les commandes web.
+            3. 🚦 POINTS DE VIGILANCE : Ce qui doit être surveillé dans les prochaines 24h.
+            4. 🎯 RECOMMANDATIONS POUR LA DIRECTION : 2 ou 3 décisions ou arbitrages à retenir.
+            """
+            sys_inst = "Tu es un Directeur des Systèmes d'Information (DSI) d'élite, qui s'exprime avec clarté, concision et pédagogie devant un comité de direction."
+            overview_text = ask_gemini_copilot(prompt_photo, sys_inst)
+            st.markdown(
+                f"""
+                <div style="background: #f8fafc; border-left: 4px solid #3b82f6; padding: 20px; border-radius: 8px; margin-top: 15px; color: #1e293b; line-height: 1.6;">
+                    {overview_text}
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+
+    # 2. Vulgarisateur Technique ("Explique-moi comme si j'avais 10 ans")
+    st.markdown("---")
+    st.markdown("### 💡 2. Vulgarisateur Technique (\"Explique-moi simplement\")")
+    st.caption("Vous ne comprenez pas un terme technique ou un incident ? Laissez l'IA vous l'expliquer avec des analogies simples.")
+
+    if incidents:
+        incident_titles = [f"#{i+1} - {inc.get('titre')}" for i, inc in enumerate(incidents)]
+        selected_inc_idx = st.selectbox(
+            "Sélectionnez l'incident à décrypter :",
+            options=range(len(incident_titles)),
+            format_func=lambda i: incident_titles[i],
+        )
+        target_incident = incidents[selected_inc_idx]
+
+        if st.button("🔍 Expliquer cet incident en termes simples"):
+            with st.spinner("Décryptage pédagogique en cours avec Gemini..."):
+                prompt_expl = f"""
+                Explique l'incident technique suivant de manière simple, vivante et accessible à une personne qui n'est pas développeuse :
+                {json.dumps(target_incident, ensure_ascii=False, indent=2)}
+
+                Structure ta réponse ainsi :
+                1. 🍎 L'analogie de la vie quotidienne (compare ce bug à une situation courante, ex: un embouteillage, un livre mal rangé, une caisse fermée).
+                2. ❓ Ce qui s'est réellement passé (en français simple, sans termes informatiques obscurs).
+                3. 💥 Pourquoi c'était embêtant pour les magasins / clients si on ne faisait rien.
+                4. 🔧 Comment l'équipe technique a réparé ça (l'idée générale de la réparation).
+                """
+                sys_inst_expl = "Tu es un vulgarisateur scientifique et technologique d'élite. Tu sais expliquer des concepts informatiques complexes (bases de données, proxy, verrous, scripts) avec des métaphores ultra parlantes."
+                explanation_text = ask_gemini_copilot(prompt_expl, sys_inst_expl)
+                st.markdown(
+                    f"""
+                    <div style="background: #fefce8; border: 1px solid #fef08a; padding: 20px; border-radius: 10px; margin-top: 15px; color: #713f12; line-height: 1.6;">
+                        {explanation_text}
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+    else:
+        st.info("Aucun incident spécifique à décrypter pour cette date.")
+
+    # 3. Chat interactif avec le Copilote DSI
+    st.markdown("---")
+    st.markdown("### 💬 3. Posez vos questions au Copilote DSI")
+    st.caption("Discutez en direct avec l'IA à propos de vos flux, alertes, projets ou d'un concept informatique.")
+
+    if "copilot_messages" not in st.session_state:
+        st.session_state.copilot_messages = [
+            {
+                "role": "assistant",
+                "content": "Bonjour ! Je suis votre Copilote DSI. Je connais l'ensemble de vos flux (OneStock, Stambia, OPCON, BDD). Demandez-moi un point de situation ou posez-moi n'importe quelle question sur un aspect technique que vous souhaitez éclaircir !",
+            }
+        ]
+
+    for msg in st.session_state.copilot_messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
+
+    if user_q := st.chat_input("Ex: Quel est l'impact du bug Stambia sur les commandes web ? / Explique-moi le rôle d'OneStock"):
+        st.session_state.copilot_messages.append({"role": "user", "content": user_q})
+        with st.chat_message("user"):
+            st.markdown(user_q)
+
+        with st.chat_message("assistant"):
+            with st.spinner("Réflexion en cours..."):
+                chat_prompt = f"""
+                Contexte du rapport de supervision DSI du {selected_date_str} :
+                {json.dumps(raw_summary, ensure_ascii=False, indent=2)}
+
+                Question de l'utilisateur :
+                {user_q}
+
+                Réponds de façon précise, bienveillante et très claire. Si l'utilisateur pose une question technique, explique-lui le principe simplement avec des exemples concrets et sans jargon inutile.
+                """
+                sys_inst_chat = "Tu es un assistant IA expert DSI & vulgarisateur technologique bienveillant et pédagogique."
+                bot_reply = ask_gemini_copilot(chat_prompt, sys_inst_chat)
+                st.markdown(bot_reply)
+                st.session_state.copilot_messages.append({"role": "assistant", "content": bot_reply})
 
 
 # --- Footer ---
