@@ -54,7 +54,7 @@ Pour que GitHub puisse déployer les tables automatiquement sur Supabase, vous a
 
 ## Étape 2 : Configuration des Identifiants Google Workspace
 
-Le projet se connecte à l'API **Gmail** (pour filtrer les libellés `OneStock via RUN`, `Notification_DSI`, `OPCON`, `trt_stambia`, etc.) et à l'API **Google Chat**.
+Le projet se connecte à l'API **Gmail** (en mode aspiration intégrale sur 48h sans filtre de mot-clé restrictif, l'IA Gemini effectuant elle-même le tri intelligent pour ne rien manquer : incidents OneStock, Stambia, OPCON, projets Snowflake, WinWig, réassort...) et à l'API **Google Chat**.
 
 Deux méthodes sont disponibles :
 - **Méthode A (Recommandée pour débuter) : ID Client OAuth 2.0 Bureau**
