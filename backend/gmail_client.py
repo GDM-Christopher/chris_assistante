@@ -149,10 +149,15 @@ def fetch_recent_emails(
             if len(body) > 3000:
                 body = body[:3000] + "\n... [contenu tronqué]"
 
+            thread_id = msg.get("threadId", msg_id)
+            gmail_url = f"https://mail.google.com/mail/u/0/#all/{thread_id}"
+
             results.append(
                 {
                     "source": "Gmail",
                     "id": msg_id,
+                    "thread_id": thread_id,
+                    "url": gmail_url,
                     "date": date_str,
                     "expediteur": sender,
                     "sujet": subject,

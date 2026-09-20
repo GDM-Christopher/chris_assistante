@@ -86,10 +86,13 @@ def fetch_recent_chat_messages(
                     sender = msg.get("sender", {}).get("displayName", "Membre Équipe")
 
                     if text:
+                        clean_space = (space_id or "").replace("spaces/", "")
+                        room_url = f"https://chat.google.com/room/{clean_space}" if clean_space else "https://chat.google.com"
                         all_messages.append(
                             {
                                 "source": "Google Chat",
                                 "espace": display_name,
+                                "url": room_url,
                                 "date": create_time_str,
                                 "expediteur": sender,
                                 "message": text,

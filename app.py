@@ -619,10 +619,30 @@ with tab2:
                         <strong style="color: #047857;">💡 Solution Technique Appliquée / Action :</strong>
                         <div class="tech-solution">{inc.get('solution_technique', 'En attente d intervention')}</div>
                     </div>
-                    </div>
                     """,
                     unsafe_allow_html=True,
                 )
+
+                source_url = inc.get("source_url")
+                source_type = inc.get("source_type", "Gmail")
+                source_ref = inc.get("source_ref", "")
+                if source_url:
+                    icon = "✉️" if source_type == "Gmail" else "💬"
+                    label = f"{icon} Ouvrir l'e-mail source dans {source_type}" if source_type == "Gmail" else f"{icon} Ouvrir le salon source dans {source_type}"
+                    if source_ref:
+                        label += f" ({source_ref})"
+                    st.markdown(
+                        f"""
+                        <div style="margin-top: 10px;">
+                            <a href="{source_url}" target="_blank" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:#f8fafc; color:#2563eb; padding:6px 14px; border-radius:6px; font-weight:600; font-size:0.85rem; border:1px solid #cbd5e1;">
+                                {label} ↗
+                            </a>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
+
+                st.markdown("</div>", unsafe_allow_html=True)
 
         # Possibilité d'export CSV
         st.markdown("<br>", unsafe_allow_html=True)
@@ -681,6 +701,25 @@ with tab3:
                             )
                     else:
                         st.markdown("*Aucune décision arbitrée.*")
+
+                p_source_url = p.get("source_url")
+                p_source_type = p.get("source_type", "Gmail")
+                p_source_ref = p.get("source_ref", "")
+                if p_source_url:
+                    icon = "✉️" if p_source_type == "Gmail" else "💬"
+                    label = f"{icon} Consulter l'e-mail source" if p_source_type == "Gmail" else f"{icon} Ouvrir le salon source"
+                    if p_source_ref:
+                        label += f" ({p_source_ref})"
+                    st.markdown(
+                        f"""
+                        <div style="margin-top: 14px; padding-top: 10px; border-top: 1px dashed #e2e8f0;">
+                            <a href="{p_source_url}" target="_blank" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px; background:#eff6ff; color:#1d4ed8; padding:6px 12px; border-radius:6px; font-weight:600; font-size:0.84rem; border:1px solid #bfdbfe;">
+                                {label} ↗
+                            </a>
+                        </div>
+                        """,
+                        unsafe_allow_html=True,
+                    )
 
 
 # ==============================================================================

@@ -3,7 +3,7 @@
 import json
 import logging
 import re
-from typing import Any, Dict, List, Literal
+from typing import Any, Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -33,11 +33,23 @@ class IncidentModel(BaseModel):
         default="En cours",
         description="Statut actuel de l'incident : 'Résolu' ou 'En cours'"
     )
+    source_type: Optional[str] = Field(
+        default="Gmail",
+        description="Type de source : 'Gmail' ou 'Google Chat'"
+    )
+    source_url: Optional[str] = Field(
+        default=None,
+        description="Lien URL direct vers l'e-mail ou message source pour consultation immédiate"
+    )
+    source_ref: Optional[str] = Field(
+        default=None,
+        description="Référence courte (ex: nom de l'expéditeur ou sujet du message source)"
+    )
 
 
 class ProjetModel(BaseModel):
     nom_projet: str = Field(description="Nom usuel du projet ou domaine concerné")
-    libelle: str = Field(description="Libellé ou tag source (ex: OneStock, Notification_DSI, OPCON, Stambia)")
+    libelle: str = Field(description="Libellé ou tag source (ex: Snowflake, OneStock, Notification_DSI, OPCON, Stambia)")
     actions_realisees: List[str] = Field(
         default_factory=list,
         description="Liste concrète des actions achevées ou avancées au cours des dernières 24h"
@@ -45,6 +57,18 @@ class ProjetModel(BaseModel):
     decisions: List[str] = Field(
         default_factory=list,
         description="Liste des décisions prises, arbitrages ou prochaines étapes validées"
+    )
+    source_type: Optional[str] = Field(
+        default="Gmail",
+        description="Type de source : 'Gmail' ou 'Google Chat'"
+    )
+    source_url: Optional[str] = Field(
+        default=None,
+        description="Lien URL direct vers l'e-mail ou message source pour consultation immédiate"
+    )
+    source_ref: Optional[str] = Field(
+        default=None,
+        description="Auteur principal ou sujet de l'échange (ex: Sylvain Cursoux, Annette Vandamme)"
     )
 
 
@@ -97,6 +121,12 @@ Ton rôle est d'effectuer le TRI INTELLIGENT DE MANIÈRE TOTALEMENT AUTONOME :
      * 'Orange' si des flux sont dégradés ou incidents/anomalies projet en cours sans arrêt total.
      * 'Rouge' si un blocage critique paralyse l'activité (magasins, entrepôt, e-commerce).
 
+3. TRAÇABILITÉ DES SOURCES (INDISPENSABLE) :
+   - Pour CHAQUE incident et CHAQUE projet, renseigne impérativement :
+     * source_type : 'Gmail' ou 'Google Chat'.
+     * source_url : Copie EXACTEMENT l'URL fournie dans le header du message source ('Lien direct: ...').
+     * source_ref : Nom de l'expéditeur ou titre du fil (ex: 'Sylvain Cursoux', 'Annette Vandamme', 'OneStock RUN', 'Stambia Support').
+
 Réponds STRICTEMENT au format JSON valide conforme au schéma imposé. Aucun texte introductif, aucune explication hors du JSON.
 """
 
@@ -124,9 +154,9 @@ def analyze_daily_communications(
             "Veuillez définir votre clé dans le fichier .env ou les secrets GitHub."
         )
 
-    logger.info(f"Initialisation de l'analyse Gemini 1.5 Pro pour le {date_str}...")
+    logger.info(f"Initialisation de l'analyse Gemini pour le {date_str}...")
 
-    # Formatage du contexte textuel pour le prompt
+    # Formatage du contexte textuel pour le prompt avec lien source
     formatted_context = []
     for idx, item in enumerate(messages_payload, start=1):
         src = item.get("source", "Source")
@@ -134,11 +164,12 @@ def analyze_daily_communications(
         date_item = item.get("date", "")
         sujet = item.get("sujet", item.get("espace", "N/A"))
         content = item.get("contenu", item.get("message", ""))
+        url = item.get("url", "")
 
         formatted_context.append(
-            f"--- [Message #{idx} | {src} | {date_item}] ---\n"
+            f"--- [Message #{idx} | {src} | Date: {date_item} | Lien direct: {url}] ---\n"
             f"De : {sender}\n"
-            f"Sujet / Espace : {sujet}\n"
+            f"Sujet / Salon : {sujet}\n"
             f"Contenu :\n{content}\n"
         )
 
