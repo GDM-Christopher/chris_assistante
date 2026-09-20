@@ -14,34 +14,43 @@ Ce guide exhaustif vous accompagne pas à pas pour configurer, exécuter en loca
 
 ---
 
-## Étape 1 : Configuration de la Base de Données Supabase
+## Étape 1 : Configuration & Déploiement Automatique de la BDD Supabase
 
-### 1.1 Créer un projet Supabase
+Pour une infrastructure professionnelle ("GitOps"), la base de données est désormais **entièrement synchronisée avec GitHub**. Dès que vous ajoutez ou modifiez un fichier dans le dossier `supabase/migrations/` et que vous poussez sur `main`, GitHub Actions exécute automatiquement les migrations sur Supabase !
+
+### 1.1 Créer votre projet Supabase
 1. Rendez-vous sur [Supabase](https://supabase.com/) et connectez-vous.
 2. Cliquez sur **"New Project"**.
-3. Renseignez un nom (ex: `chris-supervision`) et définissez un mot de passe fort pour la base de données.
+3. Renseignez un nom (ex: `chris-supervision`) et définissez un **mot de passe fort pour la base de données** (notez-le bien, il sert pour `SUPABASE_DB_PASSWORD`).
 4. Choisissez la région la plus proche (ex: `Frankfurt (eu-central-1)`).
 
-### 1.2 Exécuter le Script SQL
-1. Dans le menu de gauche de Supabase, ouvrez l'onglet **SQL Editor** (icône `>_`).
-2. Cliquez sur **"New query"**.
-3. Copiez l'intégralité du contenu du fichier `supabase_schema.sql` situé dans ce projet et collez-le.
-4. Cliquez sur **"Run"** (ou `Ctrl + Entrée`).
-5. Le script va créer :
-   - La table `daily_reports` avec colonnes `id`, `report_date`, `raw_summary`, `created_at`, `updated_at`.
-   - Les index de performance B-Tree et GIN.
-   - Les règles de sécurité RLS (Row Level Security).
-   - Un jeu de données d'exemple pour la date du jour.
+### 1.2 Récupérer vos Identifiants Supabase pour GitHub
+Pour que GitHub puisse déployer les tables automatiquement sur Supabase, vous avez besoin de 3 informations :
+1. **Référence du Projet (`SUPABASE_PROJECT_REF`)** :
+   - Visible dans l'URL de votre projet : `https://supabase.com/dashboard/project/<VOTRE_PROJECT_REF>`
+   - Ou dans **Project Settings** > **General** > **Reference ID**.
+2. **Mot de passe de la Base de Données (`SUPABASE_DB_PASSWORD`)** :
+   - Le mot de passe que vous avez défini à la création du projet.
+   - *(En cas d'oubli, vous pouvez le réinitialiser dans Project Settings > Database > Reset Database Password)*.
+3. **Jeton d'Accès Personnel Supabase (`SUPABASE_ACCESS_TOKEN`)** :
+   - Cliquez sur votre avatar en bas à gauche > **Account Settings** (ou rendez-vous sur [https://supabase.com/dashboard/account/tokens](https://supabase.com/dashboard/account/tokens)).
+   - Cliquez sur **"Generate new token"**, nommez-le `github-actions-deploy`, et copiez la clé générée.
 
-### 1.3 Récupérer vos Clés d'API Supabase
-1. Allez dans **Project Settings** (icône d'engrenage en bas à gauche) > **API**.
-2. Notez deux valeurs indispensables :
-   - **Project URL** (ex: `https://xyzcompany.supabase.co`) -> correspond à `SUPABASE_URL`.
+### 1.3 Comment fonctionne le Déploiement Automatique ?
+- Vos migrations SQL sont stockées dans `supabase/migrations/` (ex: `20260920144000_create_daily_reports.sql`).
+- Le workflow GitHub Actions `.github/workflows/supabase_deploy.yml` est pré-configuré dans le projet.
+- Dès que vous faites un `git push` contenant une nouvelle migration ou une modification, **GitHub Actions se connecte à Supabase et applique les changements automatiquement** (`supabase db push`). Plus besoin de faire de copier-coller manuel !
+
+### 1.4 Récupérer les clés d'accès API pour l'Application
+1. Allez dans **Project Settings** > **API**.
+2. Notez deux valeurs indispensables pour l'application Streamlit et le runner d'ingestion :
+   - **Project URL** (ex: `https://xyzcompany.supabase.co`) -> `SUPABASE_URL`.
    - **Project API Keys** :
      * `anon` / `public` -> clé publique pour l'application Streamlit.
-     * `service_role` -> clé secrète avec droits d'écriture complets pour le runner backend et GitHub Actions.
+     * `service_role` -> clé secrète avec droits d'écriture complets pour `SUPABASE_KEY` dans le runner et Render.
 
----
+*(Note de secours : Si vous préférez exécuter le SQL manuellement au début, le script complet est également disponible dans `supabase_schema.sql` et peut être exécuté dans le SQL Editor de Supabase).*
+
 
 ## Étape 2 : Configuration des Identifiants Google Workspace
 
@@ -160,17 +169,25 @@ git push -u origin main
 ```
 
 ### 5.2 Déclarer les Secrets sur GitHub
-Pour que le cron quotidien (`daily_cron.yml`) s'exécute chaque matin à 08:00 UTC :
+Pour activer à la fois l'**ingestion quotidienne automatique** et le **déploiement automatique de la BDD Supabase** :
 1. Sur GitHub, accédez à votre dépôt : `https://github.com/GDM-Christopher/chris_assistante`.
 2. Allez dans **Settings** > **Secrets and variables** > **Actions**.
 3. Cliquez sur **"New repository secret"** et ajoutez les variables suivantes :
 
+#### A. Secrets pour l'Analyse & l'Ingestion Quotidienne (Cron 08:00 UTC)
 | Nom du Secret | Description / Valeur |
 | :--- | :--- |
 | `GEMINI_API_KEY` | Votre clé Google AI Studio (`AIzaSy...`) |
 | `SUPABASE_URL` | L'URL de votre projet Supabase (`https://xxx.supabase.co`) |
 | `SUPABASE_KEY` | La clé `service_role` de Supabase (pour autoriser l'écriture) |
 | `GOOGLE_CREDENTIALS_BASE64` | Le contenu Base64 de votre `token.json` ou `service_account.json` |
+
+#### B. Secrets pour le Déploiement Automatique BDD Supabase (Migrations)
+| Nom du Secret | Description / Valeur |
+| :--- | :--- |
+| `SUPABASE_PROJECT_REF` | Référence du projet Supabase (ex: `abcdefghijklmnopqrst`) |
+| `SUPABASE_DB_PASSWORD` | Mot de passe de votre base PostgreSQL Supabase |
+| `SUPABASE_ACCESS_TOKEN` | Jeton d'accès personnel généré sur https://supabase.com/dashboard/account/tokens |
 
 > 💡 **Astuce pour obtenir la valeur Base64 en PowerShell :**
 > ```powershell
