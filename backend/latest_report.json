@@ -1,46 +1,62 @@
 {
   "report_date": "2026-09-20",
   "statut_global": "Orange",
-  "resume_executif": "Le SI est en statut 'Orange' en raison de rejets continus de commandes via le flux Stambia ECOM_SF_ORDER et d'erreurs d'import dans OneStock. Le projet d'application 'Proposition d'Implantation' avance avec une MEP de l'industrialisation du stock mini magasin prévue pour le 22/09. Christopher Gilleron a initié des explorations sur Supabase pour la data science et doit préparer un point complet sur les incidents et l'avancement des projets Data/IA pour la réunion hebdomadaire du 22 septembre.",
-  "alertes": [],
+  "resume_executif": "Le SI est en statut Orange en raison de rejets persistants sur le flux de commandes e-commerce Stambia (ECOM_SF_ORDER) et d'erreurs d'import de données OneStock, nécessitant une investigation rapide. Une alerte d'expiration de mot de passe Salesforce est également à traiter. En parallèle, le projet d'application \"Proposition d'Implantation\" sur Snowflake avance avec des livraisons d'évolutions et une MEP du stock mini magasin prévue pour le 22/09, bien qu'un point sur une règle d'implantation spécifique soit en suspens. Des fichiers de préparation de secours pour la logistique ont été générés.",
+  "alertes": [
+    "Expiration du mot de passe Salesforce Commerce Cloud de Christopher Gilleron dans 10 jours."
+  ],
   "incidents": [
     {
-      "titre": "Rejet de commandes en PRODUCTION (Stambia)",
-      "description": "Des rejets ont été créés suite à l'exécution répétée du flux ECOM_SF_ORDER en PRODUCTION. Nécessite une vérification de la table stambia.R_ORDER_GLOBAL pour identifier les commandes impactées.",
+      "titre": "Rejet de commandes e-commerce en PRODUCTION",
+      "description": "Des rejets ont été créés suite à l'exécution répétée du flux ECOM_SF_ORDER en PRODUCTION.",
       "bdd_impactees": [
         "stambia.R_ORDER_GLOBAL"
       ],
       "flux_impactes": [
         "ECOM_SF_ORDER (Stambia)"
       ],
-      "cause_racine": "Non spécifiée, potentiellement des données invalides ou un problème de configuration du flux.",
-      "solution_technique": "Analyser les rejets dans stambia.R_ORDER_GLOBAL et corriger les données ou le flux. Escalader si la cause racine n'est pas identifiée.",
+      "cause_racine": "Non spécifiée, nécessite investigation.",
+      "solution_technique": "Investigation des causes des rejets et correction du flux.",
       "statut": "En cours",
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0b3a3c9ec87afb",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0bf76984dbf37b",
       "source_ref": "trt_stambia@graindemalice.com"
     },
     {
-      "titre": "Erreur d'import OneStock",
-      "description": "Problèmes détectés lors de l'import de données dans OneStock, avec des erreurs de type 'user_import' indiquant 'endpoints does not exist'. Des IDs comme 10267, 00899, 10268 sont affectés.",
+      "titre": "Erreur d'import de données OneStock",
+      "description": "Problèmes détectés lors de l'import de données dans OneStock, avec des erreurs de type \"user_import\" et \"endpoints does not exist\" pour plusieurs IDs (ex: 10267, 00899, 10268).",
       "bdd_impactees": [],
       "flux_impactes": [
-        "Import de données OneStock"
+        "Import autre (OneStock)"
       ],
-      "cause_racine": "Erreur de configuration des endpoints ou données d'import invalides.",
+      "cause_racine": "Erreurs d'endpoints non existants ou problèmes dans les fichiers d'import.",
       "solution_technique": "Vérifier les fichiers reçus ou contacter le support OneStock.",
       "statut": "En cours",
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a0bcd5d3e121610",
-      "source_ref": "OneStock via RUN"
+      "source_ref": "'OneStock' via RUN"
     },
     {
-      "titre": "Problème d'impression TPE Caisse 1 (Rouen)",
-      "description": "Le TPE de la caisse 1 du magasin de Rouen a une impression très peu lisible, rendant la lecture de la télécollecte difficile.",
+      "titre": "Expiration du mot de passe Salesforce Commerce Cloud",
+      "description": "Le mot de passe du compte Account Manager Salesforce Commerce Cloud de Christopher Gilleron expirera dans 10 jours.",
       "bdd_impactees": [],
       "flux_impactes": [],
-      "cause_racine": "Problème matériel du TPE (imprimante intégrée).",
-      "solution_technique": "Intervention technique sur le TPE ou remplacement de l'appareil.",
+      "cause_racine": "Expiration programmée du mot de passe.",
+      "solution_technique": "Changer le mot de passe via le lien fourni.",
+      "statut": "En cours",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0bd2fc385421e3",
+      "source_ref": "Salesforce Commerce Cloud Account Manager"
+    },
+    {
+      "titre": "Problème d'impression TPE Caisse 1 (Rouen-CV_538)",
+      "description": "L'impression du TPE de la caisse 1 est très peu lisible, rendant la lecture de la télécollecte difficile.",
+      "bdd_impactees": [],
+      "flux_impactes": [
+        "Télécollecte TPE"
+      ],
+      "cause_racine": "Problème matériel ou de configuration de l'imprimante TPE.",
+      "solution_technique": "Intervention technique sur le TPE pour résoudre le problème d'impression.",
       "statut": "En cours",
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a0b929e664b7bea",
@@ -50,64 +66,35 @@
   "projets": [
     {
       "nom_projet": "Proposition d'Implantation & Gestion Casse",
-      "libelle": "Snowflake / Supply Chain",
+      "libelle": "Snowflake",
       "actions_realisees": [
-        "Implémentation du filtre 'Statut prévisionnel' (À implanter, Implantation probable, Retard livrable, Retard non livré).",
-        "Ajout d'un indicateur de fraîcheur des données.",
-        "Mise à jour de la gestion de la casse pour ne proposer au blocage que les magasins avec stock mini > 0.",
-        "Repositionnement de la colonne 'Contient Pack' après le RDV entrepôt.",
-        "Implémentation de la sélection multiple par glissement sur plusieurs lignes.",
-        "Ajout d'indicateurs de synthèse Casse (nombre de références sélectionnées, nombre total de pièces manquantes).",
-        "Revue du rafraîchissement des stocks matin/après-midi (données matin disponibles avant 8h, second lancement à midi en cours de mise en place).",
-        "Revue de code pour l'industrialisation du stock mini magasin réalisée avec Erwan (ajustements en cours: vues Bronze dédupliquées, rattachement statut magasin actif, nettoyage tests, validation qualification)."
+        "Filtre \"Statut prévisionnel\" (À implanter, Implantation probable, Retard livrable, Retard non livré) implémenté.",
+        "Indicateur de fraîcheur des données ajouté.",
+        "Gestion de la casse améliorée (seuls les magasins avec stock mini > 0 pour CMM et taille sont proposés au blocage).",
+        "Colonne \"Contient Pack\" repositionnée après le RDV entrepôt.",
+        "Sélection multiple par glissement sur plusieurs lignes ajoutée.",
+        "Indicateurs de synthèse Casse (nombre de références sélectionnées, total pièces manquantes) ajoutés.",
+        "Rafraîchissement des stocks matin / après-midi revu avec Erwan et Sébastien (données matin avant 8h, second lancement midi en cours de mise en place).",
+        "Revue de code pour industrialisation du stock mini magasin réalisée avec Erwan (utilisation vues Bronze dédupliquées, rattachement statut magasin actif, nettoyage tests, validation en qualification)."
       ],
       "decisions": [
-        "Objectif de mise en production de l'industrialisation du stock mini magasin : mardi 22/09.",
-        "L'application s'appuiera sur une source industrialisée après la MEP.",
-        "Correction à apporter pour la référence H26ABI.T rouge : si zéro ventes réseau et si stock+transit+en cours de prep est nul ou négatif, alors la RC doit apparaître dans la proposition d'implantation (selon Annette Vandamme)."
+        "Objectif de mise en production du stock mini magasin industrialisé : mardi 22/09.",
+        "Correction à apporter sur la règle d'Annette concernant la référence H26ABI.T rouge (si zéro ventes réseau et si stock+transit+en cours de prep est nul ou négatif, alors la RC doit apparaître dans la proposition d'implantation).",
+        "La stabilisation du confort de saisie / rechargement du tableau est la première priorité ergonomique."
       ],
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a0b4f4a8f717c45",
       "source_ref": "Sylvain CURSOUX / Annette Vandamme"
     },
     {
-      "nom_projet": "Exploration Data Science / Développement",
-      "libelle": "Supabase / GitHub",
-      "actions_realisees": [
-        "Christopher Gilleron a créé un projet Supabase ('GDM-Christopher's Project').",
-        "Un compte Supabase a été créé et lié à GitHub (autorisation d'application OAuth et ajout d'un Personal Access Token)."
-      ],
-      "decisions": [
-        "Christopher explore des outils pour le développement Data Science."
-      ],
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0becf35909cfa3",
-      "source_ref": "Christopher Gilleron"
-    },
-    {
-      "nom_projet": "Plan de Continuité Informatique (PCI)",
+      "nom_projet": "Plan de Continuité Informatique (PCI) Logistique",
       "libelle": "Logistique GDM",
       "actions_realisees": [
-        "Fichiers de sauvegarde en cas de problème informatique mis à disposition : stocks emplacements Logys GDM, magasins avec jour de départ/transporteur prévu, TOP 100 des ventes des 7 derniers jours, ventes de la veille pour réassort vente pour vente avec stock dépôt et code magasin."
+        "Génération et mise à disposition de fichiers de sauvegarde en cas de problème informatique (stocks emplacements Logys GDM, magasins avec jour de départ/transporteur, TOP 100 ventes 7 derniers jours, ventes veille pour réassort)."
       ],
-      "decisions": [
-        "Ces fichiers constituent des mesures de secours pour la logistique en cas d'incident informatique majeur."
-      ],
+      "decisions": [],
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a0bbc0118386cd0",
-      "source_ref": "Notification_DSI@ephigea.com"
-    },
-    {
-      "nom_projet": "Réassort",
-      "libelle": "Logistique GDM",
-      "actions_realisees": [
-        "Fichier de réassort de 19h pour le 19/09/2026 (15578 pièces) envoyé."
-      ],
-      "decisions": [
-        "Suivi quotidien du réassort via des fichiers dédiés."
-      ],
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0bab34736699a2",
       "source_ref": "Notification_DSI@ephigea.com"
     }
   ],
@@ -125,29 +112,26 @@
         "Elisabeth Napierala"
       ],
       "sujets_abordes": [
-        "Points hebdomadaires Data/IA et Supply.",
-        "Avancement de l'application Proposition d'Implantation et Gestion Casse.",
-        "Statut des incidents techniques impactant les flux (Stambia, OneStock).",
-        "Suivi des actions issues des précédentes réunions Data/IA et Synchro Dév./Data."
+        "Suivi des projets Data/IA et Supply Chain",
+        "Avancement de l'application Proposition d'Implantation",
+        "Point sur les incidents de production (Stambia, OneStock)",
+        "Stratégie d'automatisation et d'intégration des données"
       ],
       "ce_que_je_dois_preparer": [
-        "Statut de l'industrialisation du stock mini magasin (objectif MEP mardi 22/09).",
-        "Point sur la correction de la règle Annette concernant la référence H26ABI.T rouge (si zéro ventes réseau et si stock+transit+en cours de prep est nul ou négatif, la RC doit apparaître).",
-        "Point sur les rejets Stambia ECOM_SF_ORDER (fréquence, impact, actions en cours, état de la table stambia.R_ORDER_GLOBAL).",
-        "Point sur les erreurs d'import OneStock ('endpoints does not exist'), actions correctives ou contact support.",
-        "Avancement des actions de Sylvain Cursoux (mise à jour tickets Jira, accompagnement métier sur tests Snowflake, point avec Erwan sur budget/rafraîchissement stocks, validation compteur stock mini avec Yazid, analyse PnL, création interface fichiers SAP, planification réunion orientation avec Erwan, soumission travail sur Git).",
-        "Avancement des actions d'Erwan Galleron (migration FN calendrier, obtention accès Tatwin, gestion flux stocks, migration compte de service Salesforce, création tickets Jira pour ingestion SAP/Piano/Retail INT, finalisation Stland V2).",
-        "Point sur le nettoyage des flux obsolètes Opcon et dépôts (action Le groupe).",
-        "Point sur l'information à Roxan concernant les flux de données obsolètes (action Le groupe).",
-        "Point sur l'analyse des outils Piano et ShopperTrak (fonction réelle, type de données) (action Marie DUCORNEY).",
-        "Point sur la proposition de créneau hebdomadaire à Lorena et Yann (action Marie DUCORNEY).",
-        "Point sur la participation à la réunion de validation des plannings métier (action Marie DUCORNEY).",
-        "Point sur le contact avec Victorien pour décaler les points hebdomadaires digitaux (action Marie DUCORNEY).",
-        "Point sur la consultation du RIDA et transfert des notes (action Marie DUCORNEY).",
-        "Point sur la consolidation des tâches PnL (action Sylvain CURSOUX).",
-        "Point sur la modification du ticket Jira 1023 (action Sylvain CURSOUX)."
+        "Statut des rejets de commandes Stambia (ECOM_SF_ORDER).",
+        "Statut des erreurs d'import OneStock.",
+        "Point sur l'avancement de l'industrialisation du stock mini magasin (objectif MEP mardi 22/09).",
+        "Préparer une réponse ou un plan d'action concernant la règle d'Annette sur la référence H26ABI.T rouge dans l'application Proposition d'Implantation.",
+        "Connaître l'état du confort de saisie / rechargement du tableau dans l'application Proposition d'Implantation.",
+        "Vérifier le document RIDA sur le Drive (https://drive.google.com/drive/folders/188uyExj1hUBycrQS6HbB4l449eERrbVy).",
+        "Point sur la migration des flux Sidebase/Sybase et le nettoyage d'Opcon (suppression des flux obsolètes).",
+        "Point sur l'intégration des données SAP, Piano et Retail INT (tickets Jira à créer, spécifications techniques).",
+        "Statut de la migration du compte de service Salesforce.",
+        "Point sur la configuration de la récupération des données de stocks deux fois par jour.",
+        "Analyse des outils Piano et ShopperTrak pour identifier leur fonction réelle.",
+        "Mise à jour des tickets Jira liés aux projets Data/IA et Supply."
       ],
-      "contexte_emails_chats": "Incidents récents: Multiples rejets du flux Stambia ECOM_SF_ORDER en PRODUCTION depuis le 19/09, impactant les commandes. Erreurs d'import OneStock ('endpoints does not exist') détectées les 19 et 20/09. Projet Proposition d'Implantation (Supply/Snowflake): Nombreuses évolutions livrées cette semaine (filtres, indicateurs fraîcheur, gestion casse, sélection multiple). Le rafraîchissement des stocks matin/après-midi a été revu. L'industrialisation du stock mini magasin est en cours avec un objectif de MEP le 22/09. Annette Vandamme a souligné une correction nécessaire pour la référence H26ABI.T rouge (doit apparaître si zéro ventes réseau et stock/transit/préparation nul ou négatif). Décisions et actions passées (issues des réunions précédentes): Restructuration des réunions de gouvernance Data Supply pour intégrer les métiers, centralisation documentaire dans le Drive. Correction de l'outil Streamlit. Mise à jour spécifique des données de stock définie. Automatisation du compte d'exploitation via Snowflake validée. Migration urgente des flux Sidebase, planification nettoyage code. Décommissionnement Storland V1 après Storland V2. Erreur table FN Calendrier corrigée via déplacement vers flux Sidebase. Intégration données Retail Int et gestion incidents en cours. Transition vers plateforme de données pour décommissionnement Collect V1. Suppression de 3 flux XDI redondants. Stabilisation de Stland V2 priorité majeure devant ingestion Retail et SAP. Automatisation de la proposition d'implantation terminée et validée en production.",
+      "contexte_emails_chats": "Le projet Proposition d'Implantation & Gestion Casse sur Snowflake a vu plusieurs évolutions livrées (filtres, indicateur fraîcheur, gestion casse, sélection multiple, indicateurs synthèse). Le rafraîchissement des stocks matin/après-midi est en cours, et l'industrialisation du stock mini magasin avec Erwan vise une MEP le 22/09. Annette Vandamme a soulevé un problème sur la référence H26ABI.T rouge concernant son apparition dans la proposition d'implantation. Le confort de saisie est une priorité ergonomique. Les notes des réunions précédentes (15 sept., 8 sept., 1 sept.) mentionnent la validation de l'automatisation via Jira, la restructuration des réunions de gouvernance Data Supply, la centralisation documentaire dans le Drive, la correction de l'outil Streamlit, la stratégie d'automatisation du compte d'exploitation via Snowflake, la migration urgente des flux Sidebase, le nettoyage d'Opcon, la correction de la table FN Calendrier, l'intégration des données Retail Int, la migration du compte de service Salesforce, et la priorisation de la stabilisation de Stland V2 et l'ingestion SAP/Retail INT. Carine intégrera les points hebdo métier au besoin.",
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a0aea55d2898eaf",
       "source_ref": "Marie DUCORNEY"
