@@ -154,16 +154,40 @@ def analyze_daily_communications(
 
         client = genai.Client(api_key=GEMINI_API_KEY)
 
-        response = client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                response_mime_type="application/json",
-                response_schema=DailySummaryModel,
-                temperature=0.2,
-            ),
-        )
+        # Liste ordonnée de modèles candidats compatibles
+        candidate_models = [GEMINI_MODEL, "gemini-2.5-flash", "gemini-flash-latest"]
+        models_to_try = []
+        for m in candidate_models:
+            if m and m not in models_to_try:
+                models_to_try.append(m)
+
+        response = None
+        last_error = None
+
+        for model_name in models_to_try:
+            try:
+                logger.info(f"Tentative d'analyse IA avec le modèle {model_name}...")
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=user_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        response_mime_type="application/json",
+                        response_schema=DailySummaryModel,
+                        temperature=0.2,
+                    ),
+                )
+                if response and response.text:
+                    logger.info(f"Réponse obtenue avec succès via {model_name}.")
+                    break
+            except Exception as model_err:
+                logger.warning(f"Échec de l'appel avec le modèle {model_name} : {model_err}")
+                last_error = model_err
+
+        if not response or not response.text:
+            if last_error:
+                raise last_error
+            raise RuntimeError("Aucune réponse générée par l'API Gemini.")
 
         response_text = response.text
         cleaned = clean_json_response(response_text)
