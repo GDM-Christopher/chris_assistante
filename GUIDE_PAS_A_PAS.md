@@ -140,19 +140,22 @@ python backend/daily_runner.py --sample-upload
 
 **Option 3 : Exécution complète réelle (Google Workspace -> Gemini -> Supabase)**
 ```powershell
-python backend/daily_runner.py
+# Aspiration intégrale 48h (couvre le week-end, boite complète, chats et réunions)
+python backend/daily_runner.py --hours 48
 ```
+*Le script aspire l'intégralité de vos e-mails des 48h (sans aucun filtre de mot-clé), vos salons Google Chat et vos invitations de réunion, confie le tri intelligent à Gemini 2.5 Flash, génère les liens directs vers les sources et sauvegarde le rapport en cache local et dans Supabase.*
 
 ### 4.4 Lancer le Dashboard Streamlit
 ```powershell
 streamlit run app.py
 ```
 Streamlit s'ouvrira automatiquement sur `http://localhost:8501`.
-Vous aurez accès :
-- Aux cartes KPI (Santé globale, incidents, alertes).
-- Aux alertes majeures du jour.
-- Au registre des incidents avec filtres par statut, base de données et flux.
-- Aux fiches projets avec accordéons dépliables et décisions.
+Vous aurez accès à **5 onglets opérationnels** :
+1. **📊 Vue d'ensemble & Alertes** : Cartes KPI (Santé SI, Incidents, Alertes, Projets, Réunions), alertes majeures du jour et graphiques.
+2. **🚨 Incidents & Résolutions** : Moteur de recherche, filtres dynamiques (statut, base de données, flux) et **boutons d'accès direct cliquables vers l'e-mail source dans Gmail**.
+3. **🚀 Avancement par Projet** : Fiches projets dépliables (Snowflake, Stambia, Logys...), actions achevées, décisions d'arbitrage et **liens vers les courriels sources**.
+4. **📅 Réunions à Venir & Préparations** : Détection automatique des réunions d'équipe (ex: *Hebdo Data/IA - Supply*), ordre du jour, checklist concrète **« Ce que Christopher doit préparer »** croisée avec les mails récents, lien direct vers l'invitation et simulateur interactif.
+5. **🧠 Copilote DSI & Décryptage Tech** : Génération de la photo globale pour le CODIR, vulgarisateur technique ("Explique-moi simplement") et assistant IA libre.
 
 ---
 

@@ -2,47 +2,59 @@
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![Streamlit](https://img.shields.io/badge/Frontend-Streamlit-FF4B4B.svg)](https://streamlit.io/)
-[![Gemini 1.5 Pro](https://img.shields.io/badge/IA-Gemini%201.5%20Pro-4285F4.svg)](https://aistudio.google.com/)
+[![Gemini 2.5 Flash](https://img.shields.io/badge/IA-Gemini%202.5%20Flash-4285F4.svg)](https://aistudio.google.com/)
 [![Supabase](https://img.shields.io/badge/Database-Supabase%20Postgres-3ECF8E.svg)](https://supabase.com/)
 [![GitHub Actions](https://img.shields.io/badge/CI%2FCD-Daily%20Cron-2088FF.svg)](https://github.com/features/actions)
 [![Render](https://img.shields.io/badge/Deploy-Render-46E3B7.svg)](https://render.com/)
 
-Plateforme complète de supervision technique quotidienne ingérant les communications de production (e-mails Gmail DSI/OPCON/Stambia/OneStock et Google Chat), synthétisée automatiquement par **Gemini 1.5 Pro**, stockée dans **Supabase**, et visualisée via un tableau de bord **Streamlit** moderne et réactif.
+Plateforme complète de supervision technique quotidienne ingérant l'intégralité des flux de communication de production (e-mails Gmail DSI/OPCON/Stambia/OneStock/Supply/Snowflake, salons Google Chat et invitations Google Calendar), analysée et filtrée automatiquement par **Gemini 2.5 Flash**, stockée dans **Supabase**, et visualisée via un tableau de bord **Streamlit** moderne et réactif.
 
 ---
 
 ## 🏗️ Architecture Globale
 
 ```text
-[Gmail API] (OneStock, DSI, OPCON, Stambia)  ──┐
-                                               ├──> [backend/daily_runner.py]
-[Google Chat API] (Espaces & Messages 24h)   ──┘            │
-                                                            ▼
-                                                   [Gemini 1.5 Pro]
-                                           (Extraction JSON ultra-structurée)
-                                                            │
-                                                            ▼
-                                                   [Supabase Database]
-                                                 (Table: daily_reports)
-                                                            │
-                                                            ▼
-                                                  [Streamlit Dashboard]
-                                            (KPIs, Alertes, Incidents, Projets)
+[Gmail API] (Aspiration intégrale 48h sans filtre de mot-clé) ──┐
+[Google Chat API] (Messages & Salons récents)                ──┼──> [backend/daily_runner.py]
+[Google Calendar / Invitations Gmail] (Agendas à venir)       ──┘            │
+                                                                             ▼
+                                                                    [Gemini 2.5 Flash]
+                                                            (Tri autonome du bruit & Extraction)
+                                                                             │
+                                                                             ▼
+                                                                    [Supabase Database]
+                                                                  (Table: daily_reports)
+                                                                             │
+                                                                             ▼
+                                                                   [Streamlit Dashboard]
+                                                    (5 Onglets : KPIs, Incidents, Projets, Réunions, Copilote)
 ```
 
 ---
 
 ## 🚀 Fonctionnalités Clés
 
-- 📥 **Ingestion Multi-Sources 24h** : Filtre intelligent des e-mails Gmail selon vos libellés clés (`OneStock via RUN`, `Notification_DSI`, `OPCON`, `trt_stambia`, etc.) et collecte des échanges Google Chat d'astreinte.
-- 🤖 **Analyse IA par Gemini 1.5 Pro** : Extraction garantie conforme à un schéma strict Pydantic (Santé globale, Alertes critiques, Incidents avec causes racines & solutions, Avancement par projet).
-- 🗄️ **Persistance Idempotente Supabase** : Table PostgreSQL `daily_reports` avec index GIN JSONB et sécurité RLS.
-- 📊 **Interface Streamlit Interactive (`app.py`)** :
-  - **Vue d'ensemble** : Statut global SI (Vert/Orange/Rouge), compteurs d'incidents résolus/en cours, métriques, alertes majeures.
-  - **Incidents & Résolutions** : Moteur de recherche plein texte, filtres croisés dynamiques (par statut, base de données, flux impacté), fiches détaillées avec blocs de code technique et export CSV.
-  - **Avancement par Projet** : Accordéons organisés par projet, synthétisant les actions achevées et les décisions prises.
-- ⏰ **Automatisation Quotidienne (Cron)** : Workflow GitHub Actions (`.github/workflows/daily_cron.yml`) exécuté tous les matins à 08:00 UTC.
-- 🌐 **Déploiement Cloud Render** : Fichier Blueprint `render.yaml` prêt à l'emploi.
+- 📥 **Aspiration Globale & Tri Cognitif Intelligent (Zero Mot-Clé Manuel)** :
+  - Ingestion de **100% des e-mails récents sur 48 heures** (couvrant tout le week-end) sans aucun filtre restrictif.
+  - **Filtre cognitif par Gemini 2.5 Flash** : L'IA élimine d'elle-même le bruit (newsletters, spams, invitations automatiques, RH généraux) et capture le signal métier et technique (OneStock, Stambia, OPCON, Snowflake, WinWig, ERP, réassorts...).
+- 🔗 **Traçabilité & Liens Directs vers les Sources** :
+  - Chaque incident, alerte et projet dispose d'un bouton cliquable ouvrant directement le fil de discussion dans **Gmail** (`https://mail.google.com/mail/u/0/#all/{thread_id}`) ou le salon dans **Google Chat**.
+- 📅 **Module Réunions à Venir & Préparations Intelligentes** :
+  - Détection automatique des réunions à venir (invitations d'agenda et courriels de cadrage).
+  - Identification des thématiques et de l'ordre du jour.
+  - Élaboration automatique de la **checklist de préparation sur-mesure pour Christopher** en croisant le sujet avec les e-mails et messages récents.
+  - **Simulateur de réunion IA interactif** pour poser des questions spécifiques (pitch d'intro de 1 min, questions pièges...).
+- 🧠 **Copilote DSI & Décryptage Pédagogique** :
+  - **Photo Globale du SI** : Génération d'une synthèse non-jargonnée prête pour le Comité de Direction.
+  - **Vulgarisateur Technique** : Explication simple et accessible de n'importe quel concept, flux ou base de données.
+  - **Assistant conversationnel** intégré.
+- 🗄️ **Persistance Idempotente Supabase & Cache Local** :
+  - Table PostgreSQL `daily_reports` avec index GIN JSONB et RLS.
+  - Cache local instantané (`backend/latest_report.json`) garantissant un affichage immédiat même hors-ligne.
+- ⏰ **Automatisation Quotidienne (Cron)** :
+  - Workflow GitHub Actions exécuté chaque matin à 08:00 UTC.
+- 🌐 **Hébergement Cloud Render** :
+  - Déploiement en continu via Web Service Render (100% gratuit).
 
 ---
 
@@ -50,25 +62,27 @@ Plateforme complète de supervision technique quotidienne ingérant les communic
 
 ```text
 chris_assistante/
-├── .github/workflows/daily_cron.yml  # Automatisation quotidienne GitHub Actions
 ├── backend/
-│   ├── config.py                     # Gestion des variables d'environnement
-│   ├── google_auth.py                # Authentification Google (OAuth2 & Service Account)
-│   ├── gmail_client.py               # Extraction et nettoyage des e-mails Gmail
-│   ├── chat_client.py                # Récupération des messages Google Chat
-│   ├── gemini_analyzer.py            # Prompt strict et inférence Gemini 1.5 Pro
-│   ├── supabase_client.py            # Client de persistance Supabase
-│   ├── mock_data.py                  # Messages de test et simulation réaliste DSI
-│   └── daily_runner.py               # Orchestrateur CLI (modes réel, mock, dry-run)
-├── app.py                            # Application frontend Streamlit
-├── supabase_schema.sql               # Schéma SQL PostgreSQL (table, index, RLS, seed)
-├── setup_google_auth.py              # Assistant de connexion Google OAuth en local
+│   ├── config.py                     # Paramètres centralisés (ingestion globale 48h, modèles)
+│   ├── google_auth.py                # Authentification Google Workspace (OAuth2 & Service Account)
+│   ├── gmail_client.py               # Ingestion intégrale Gmail (avec génération d'URLs web)
+│   ├── chat_client.py                # Ingestion des salons et messages Google Chat
+│   ├── meetings_client.py            # Ingestion des invitations et réunions à venir
+│   ├── gemini_analyzer.py            # Moteur IA (Gemini 2.5 Flash, schémas Pydantic stricts)
+│   ├── supabase_client.py            # Client d'accès et persistance PostgreSQL Supabase
+│   ├── mock_data.py                  # Jeu de données de simulation DSI pour tests hors-ligne
+│   ├── daily_runner.py               # Orchestrateur central CLI (production, mock, dry-run)
+│   └── latest_report.json            # Cache local du dernier rapport généré
+├── app.py                            # Interface frontend Streamlit (5 onglets interactifs)
+├── supabase_schema.sql               # Schéma SQL PostgreSQL complet (tables, index, RLS)
+├── setup_google_auth.py              # Assistant interactif de connexion Google OAuth en local
 ├── requirements.txt                  # Dépendances Python
-├── render.yaml                       # Blueprint de déploiement Render
-├── .env.example                      # Gabarit des secrets et variables d'environnement
-├── .gitignore                        # Protection des clés privées et tokens
-├── GUIDE_PAS_A_PAS.md                # Documentation complète de mise en production
-└── README.md                         # Présentation du projet
+├── render.yaml                       # Blueprint de déploiement Cloud sur Render
+├── .env.example                      # Modèle des variables d'environnement
+├── .gitignore                        # Protection des secrets et données sensibles
+├── GUIDE_PAS_A_PAS.md                # Guide complet de configuration et mise en production
+├── SYNTHESE_GLOBALE_ARCHITECTURE.md  # Dossier d'architecture et de conception technique
+└── README.md                         # Présentation générale du projet
 ```
 
 ---
@@ -89,21 +103,27 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
-### 2. Tester immédiatement le Dashboard
+### 2. Lancer le Tableau de Bord Streamlit
 ```powershell
-# Lancer Streamlit (affichera des données d'exemple si Supabase n'est pas encore relié)
 streamlit run app.py
 ```
+L'application s'ouvre sur `http://localhost:8501` avec ses **5 onglets opérationnels** :
+1. **📊 Vue d'ensemble & Alertes** : Santé globale, KPI cards, synthèse exécutive.
+2. **🚨 Incidents & Résolutions Techniques** : Registre filtrable avec liens directs Gmail/Chat.
+3. **🚀 Avancement par Projet** : Suivi des chantiers (Snowflake, Stambia, Logys...) et arbitrages.
+4. **📅 Réunions à Venir & Préparations** : Ordre du jour, checklist de préparation IA et simulateur.
+5. **🧠 Copilote DSI & Décryptage Tech** : Photo CODIR, vulgarisateur et assistant interactif.
 
-### 3. Tester le Runner IA en Simulation
+### 3. Lancer une Ingestion Réelle
 ```powershell
-# Déclenche l'analyse Gemini sur un jeu de messages de test (nécessite juste GEMINI_API_KEY dans .env)
-python backend/daily_runner.py --mock --dry-run
+# Ingestion des 48 dernières heures (boîte complète, chat, réunions)
+python backend/daily_runner.py --hours 48
 ```
 
 ---
 
-## 📖 Guide de Configuration Détaillé
+## 📖 Documentation Complète
 
-Pour configurer Supabase, vos identifiants Google Workspace, vos secrets GitHub Actions et déployer sur Render, consultez le guide pas-à-pas complet :
-👉 **[Consulter GUIDE_PAS_A_PAS.md](file:///C:/Users/cgilleron/chris_assistante/GUIDE_PAS_A_PAS.md)**
+Pour configurer Supabase, vos identifiants Google Workspace, vos secrets GitHub Actions et déployer sur Render :
+👉 **[Consulter le GUIDE_PAS_A_PAS.md](file:///c:/Users/cgilleron/chris_assistante/GUIDE_PAS_A_PAS.md)**  
+👉 **[Consulter la SYNTHESE_GLOBALE_ARCHITECTURE.md](file:///c:/Users/cgilleron/chris_assistante/SYNTHESE_GLOBALE_ARCHITECTURE.md)**
