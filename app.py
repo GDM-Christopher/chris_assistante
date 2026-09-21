@@ -264,16 +264,6 @@ with st.sidebar:
     if st.button("🔄 Rafraîchir les données", use_container_width=True):
         st.rerun()
 
-    # Injection directe de données d'exemple (très utile pour premier test)
-    with st.expander("🛠️ Actions Administrateur"):
-        if st.button("📥 Charger les données de démo dans Supabase"):
-            today_str = datetime.date.today().isoformat()
-            try:
-                upsert_daily_report(today_str, MOCK_STRUCTURED_SUMMARY)
-                st.success(f"Données de démo injectées pour le {today_str} !")
-                st.rerun()
-            except Exception as ex:
-                st.error(f"Erreur d'injection : {ex}")
 
 
 # --- 3. Récupération des Données du Rapport Sélectionné ---
