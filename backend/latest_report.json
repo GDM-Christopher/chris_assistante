@@ -1,107 +1,172 @@
 {
-  "report_date": "2026-09-20",
+  "report_date": "2026-09-21",
   "statut_global": "Orange",
-  "resume_executif": "Le SI est en statut Orange en raison de rejets persistants sur le flux de commandes e-commerce Stambia (ECOM_SF_ORDER) et d'erreurs d'import de données OneStock, nécessitant une investigation rapide. Une alerte d'expiration de mot de passe Salesforce est également à traiter. En parallèle, le projet d'application \"Proposition d'Implantation\" sur Snowflake avance avec des livraisons d'évolutions et une MEP du stock mini magasin prévue pour le 22/09, bien qu'un point sur une règle d'implantation spécifique soit en suspens. Des fichiers de préparation de secours pour la logistique ont été générés.",
+  "resume_executif": "Le SI est en statut Orange en raison de plusieurs incidents de production en cours. Des rejets récurrents de commandes Stambia et des erreurs d'import OneStock impactent les flux e-commerce. Des anomalies d'intégration logistique et des problèmes de privilèges sur Snowflake nécessitent une attention immédiate. Parallèlement, la migration des tableaux JIRA est en cours de planification et la bascule vers une nouvelle version de BO est annoncée.",
   "alertes": [
-    "Expiration du mot de passe Salesforce Commerce Cloud de Christopher Gilleron dans 10 jours."
+    "Expiration imminente du mot de passe Salesforce Commerce Cloud de Christopher Gilleron (dans 10 jours)."
   ],
   "incidents": [
     {
-      "titre": "Rejet de commandes e-commerce en PRODUCTION",
-      "description": "Des rejets ont été créés suite à l'exécution répétée du flux ECOM_SF_ORDER en PRODUCTION.",
+      "titre": "Rejet récurrent de nouvelles commandes en PRODUCTION (ECOM_SF_ORDER)",
+      "description": "Des rejets ont été créés suite à l'exécution du flux ECOM_SF_ORDER en PRODUCTION. La requête `SELECT * FROM stambia.R_ORDER_GLOBAL;` permet d'afficher les commandes en rejets. Cet incident est récurrent sur les dernières 24-48h.",
       "bdd_impactees": [
         "stambia.R_ORDER_GLOBAL"
       ],
       "flux_impactes": [
         "ECOM_SF_ORDER (Stambia)"
       ],
-      "cause_racine": "Non spécifiée, nécessite investigation.",
-      "solution_technique": "Investigation des causes des rejets et correction du flux.",
+      "cause_racine": "Non spécifiée, nécessite une investigation approfondie sur la cause des rejets de commandes.",
+      "solution_technique": "Investigation de la cause racine des rejets et correction des données ou du flux. Suivi des commandes en rejet via `SELECT * FROM stambia.R_ORDER_GLOBAL;`.",
       "statut": "En cours",
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a0bf76984dbf37b",
       "source_ref": "trt_stambia@graindemalice.com"
     },
     {
-      "titre": "Erreur d'import de données OneStock",
-      "description": "Problèmes détectés lors de l'import de données dans OneStock, avec des erreurs de type \"user_import\" et \"endpoints does not exist\" pour plusieurs IDs (ex: 10267, 00899, 10268).",
+      "titre": "Erreur d'import OneStock: 'endpoints does not exist'",
+      "description": "Problèmes détectés lors de l'import de données dans OneStock, spécifiquement des erreurs de type 'user_import' avec le message 'endpoints does not exist' pour les IDs 00899, 10268, 10267.",
       "bdd_impactees": [],
       "flux_impactes": [
-        "Import autre (OneStock)"
+        "Import de données OneStock (via RUN)"
       ],
-      "cause_racine": "Erreurs d'endpoints non existants ou problèmes dans les fichiers d'import.",
+      "cause_racine": "Fichiers reçus incorrects ou configuration d'endpoints manquante/erronée dans OneStock.",
       "solution_technique": "Vérifier les fichiers reçus ou contacter le support OneStock.",
       "statut": "En cours",
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0bcd5d3e121610",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c1fc2cfe527b8",
       "source_ref": "'OneStock' via RUN"
     },
     {
-      "titre": "Expiration du mot de passe Salesforce Commerce Cloud",
-      "description": "Le mot de passe du compte Account Manager Salesforce Commerce Cloud de Christopher Gilleron expirera dans 10 jours.",
-      "bdd_impactees": [],
-      "flux_impactes": [],
-      "cause_racine": "Expiration programmée du mot de passe.",
-      "solution_technique": "Changer le mot de passe via le lien fourni.",
-      "statut": "En cours",
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0bd2fc385421e3",
-      "source_ref": "Salesforce Commerce Cloud Account Manager"
-    },
-    {
-      "titre": "Problème d'impression TPE Caisse 1 (Rouen-CV_538)",
-      "description": "L'impression du TPE de la caisse 1 est très peu lisible, rendant la lecture de la télécollecte difficile.",
+      "titre": "Anomalies d'intégration logistique (WMS_CTRL_INTEGRATION)",
+      "description": "Le fichier de contrôle de l'intégration des données remontées depuis la logistique signale des anomalies ayant un impact sur les transits magasin, le stock dépôt et les réceptions.",
       "bdd_impactees": [],
       "flux_impactes": [
-        "Télécollecte TPE"
+        "WMS_CTRL_INTEGRATION"
       ],
-      "cause_racine": "Problème matériel ou de configuration de l'imprimante TPE.",
-      "solution_technique": "Intervention technique sur le TPE pour résoudre le problème d'impression.",
+      "cause_racine": "Anomalies dans les données remontées depuis la logistique.",
+      "solution_technique": "Traiter les anomalies rapidement pour limiter l'impact sur les opérations.",
       "statut": "En cours",
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0b929e664b7bea",
-      "source_ref": "MAG_GDM_FR ROUEN-CV_538"
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c272524ecd323",
+      "source_ref": "Notification_DSI@ephigea.com"
+    },
+    {
+      "titre": "Erreur d'intégration commande Apizr (statusCode: 500)",
+      "description": "Une erreur a été détectée pour la commande 34170347, fichier gdm-order-20260920201832.xml. L'erreur est de type 'Could not execute node 'Cas d'erreur': Failed to contact requester CREATE_CUSTOMER_CARD, statusCode: 500'.",
+      "bdd_impactees": [],
+      "flux_impactes": [
+        "Intégration de commande via Apizr (CREATE_CUSTOMER_CARD)"
+      ],
+      "cause_racine": "Échec de contact avec le service CREATE_CUSTOMER_CARD (erreur 500).",
+      "solution_technique": "Consulter les détails de l'erreur sur Apizr pour investigation et résolution.",
+      "statut": "En cours",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c0427ec61d5a0",
+      "source_ref": "no-reply@apizr.fr"
+    },
+    {
+      "titre": "Problèmes de privilèges Snowflake sur des flux de données",
+      "description": "Plantages ce week-end sur les flux ALIM_FUSION_SNOM, Snow_DEC_DEVISE, SNOW_DEC_OBJECTIF en raison de privilèges insuffisants (TRUNCATE) pour le rôle RS_XDI_PROD sur les tables T_EVT_CLIENTS_FUSION, T_EVT_DEVISES, T_EVT_OBJECTIF dans GDM_BRONZE_PROD.STORELAND.",
+      "bdd_impactees": [
+        "GDM_BRONZE_PROD.STORELAND (Snowflake)"
+      ],
+      "flux_impactes": [
+        "ALIM_FUSION_SNOM",
+        "Snow_DEC_DEVISE",
+        "SNOW_DEC_OBJECTIF"
+      ],
+      "cause_racine": "Privilèges insuffisants (TRUNCATE) pour le rôle RS_XDI_PROD. Erwan Galleron a indiqué que ces jobs seront décommissionnés.",
+      "solution_technique": "Erwan Galleron s'occupe de la situation, les jobs concernés seront arrêtés prochainement.",
+      "statut": "En cours",
+      "source_type": "Google Chat",
+      "source_url": "https://chat.google.com/room/AAAAxgmHsuA",
+      "source_ref": "Roxane CANO"
+    },
+    {
+      "titre": "Commande bloquée (34163375) - Problème point relais / adresse",
+      "description": "La commande 34163375 était bloquée car il manquait le nom et le code du point relais. La cliente a souhaité annuler la commande car elle en avait besoin pour le soir même.",
+      "bdd_impactees": [],
+      "flux_impactes": [
+        "Intégration de commande",
+        "Livraison"
+      ],
+      "cause_racine": "Informations de point relais manquantes ou incorrectes lors de la création de la commande.",
+      "solution_technique": "Commande annulée et remboursée sur Payzen par Ella SAIDI-ROULLEAU. Roxane CANO n'intègre pas la commande.",
+      "statut": "Résolu",
+      "source_type": "Google Chat",
+      "source_url": "https://chat.google.com/room/AAAAerZzJKI",
+      "source_ref": "Ella SAIDI-ROULLEAU"
+    },
+    {
+      "titre": "Commande Zalando non préparée (3618011098564)",
+      "description": "La commande Zalando du 16/09 (ZA-10313214884521) n'est pas visible en préparation.",
+      "bdd_impactees": [],
+      "flux_impactes": [
+        "Préparation de commande (Zalando)"
+      ],
+      "cause_racine": "Non spécifiée, nécessite une investigation.",
+      "solution_technique": "Roxane CANO va investiguer la situation.",
+      "statut": "En cours",
+      "source_type": "Google Chat",
+      "source_url": "https://chat.google.com/room/AAQA5BpGcuU",
+      "source_ref": "Blandine Vicente"
     }
   ],
   "projets": [
     {
-      "nom_projet": "Proposition d'Implantation & Gestion Casse",
-      "libelle": "Snowflake",
-      "actions_realisees": [
-        "Filtre \"Statut prévisionnel\" (À implanter, Implantation probable, Retard livrable, Retard non livré) implémenté.",
-        "Indicateur de fraîcheur des données ajouté.",
-        "Gestion de la casse améliorée (seuls les magasins avec stock mini > 0 pour CMM et taille sont proposés au blocage).",
-        "Colonne \"Contient Pack\" repositionnée après le RDV entrepôt.",
-        "Sélection multiple par glissement sur plusieurs lignes ajoutée.",
-        "Indicateurs de synthèse Casse (nombre de références sélectionnées, total pièces manquantes) ajoutés.",
-        "Rafraîchissement des stocks matin / après-midi revu avec Erwan et Sébastien (données matin avant 8h, second lancement midi en cours de mise en place).",
-        "Revue de code pour industrialisation du stock mini magasin réalisée avec Erwan (utilisation vues Bronze dédupliquées, rattachement statut magasin actif, nettoyage tests, validation en qualification)."
-      ],
+      "nom_projet": "Migration JIRA",
+      "libelle": "JIRA",
+      "actions_realisees": [],
       "decisions": [
-        "Objectif de mise en production du stock mini magasin industrialisé : mardi 22/09.",
-        "Correction à apporter sur la règle d'Annette concernant la référence H26ABI.T rouge (si zéro ventes réseau et si stock+transit+en cours de prep est nul ou négatif, alors la RC doit apparaître dans la proposition d'implantation).",
-        "La stabilisation du confort de saisie / rechargement du tableau est la première priorité ergonomique."
+        "Migration des espaces JIRA 'GDM - Stock' vers 'GDM' puis 'GDM' vers un nouvel espace JIRA.",
+        "Harmonisation du workflow de gestion et de suivi des tickets JIRA.",
+        "Choix d'un créneau pour la première étape de migration (Mercredi 23/09 à 10h00 ou 16h00)."
       ],
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0b4f4a8f717c45",
-      "source_ref": "Sylvain CURSOUX / Annette Vandamme"
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c28d1ca7e8d02",
+      "source_ref": "Emmanuel ESCOURRE"
     },
     {
-      "nom_projet": "Plan de Continuité Informatique (PCI) Logistique",
-      "libelle": "Logistique GDM",
+      "nom_projet": "Logistique / Supply Chain",
+      "libelle": "Préparation Entrepôt",
       "actions_realisees": [
-        "Génération et mise à disposition de fichiers de sauvegarde en cas de problème informatique (stocks emplacements Logys GDM, magasins avec jour de départ/transporteur, TOP 100 ventes 7 derniers jours, ventes veille pour réassort)."
+        "Reporting d'activité J-1: E-Commerce 15.24% préparé, Dotations 97.33%, Implantation 99.64%, Réassort 97.78%, Autres 5.43%. Total J-1: 88.73% préparé (20728/23360).",
+        "Reporting d'activité J: Total 25362 pièces préparées."
       ],
       "decisions": [],
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0bbc0118386cd0",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c1c4043f9f6fc",
       "source_ref": "Notification_DSI@ephigea.com"
+    },
+    {
+      "nom_projet": "Plan de Continuité Informatique (PCI)",
+      "libelle": "Logistique GDM",
+      "actions_realisees": [
+        "Génération de fichiers de sauvegarde en cas de problème informatique : stocks emplacements Logys GDM, magasins avec jour de départ et transporteur, TOP 100 ventes 7 derniers jours, ventes de la veille pour réassort."
+      ],
+      "decisions": [],
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c0dcb6fe7daac",
+      "source_ref": "Notification_DSI@ephigea.com"
+    },
+    {
+      "nom_projet": "Migration BO",
+      "libelle": "Reporting",
+      "actions_realisees": [
+        "Annonce de la bascule sur la nouvelle version BO lundi 28 sept."
+      ],
+      "decisions": [
+        "Christopher devra modifier les invitations des planifs dans la nouvelle version pour les changements de région. Elisabeth Napierala apportera son aide si besoin."
+      ],
+      "source_type": "Google Chat",
+      "source_url": "https://chat.google.com/room/AAQAJNw_z10",
+      "source_ref": "Elisabeth Napierala"
     }
   ],
   "reunions_a_venir": [
     {
       "titre": "Hebdo - Data/IA - Supply",
-      "date_heure": "mardi 22 sept. 2026 ⋅ 9:30am – 10am (UTC+2)",
+      "date_heure": "mardi 22 sept. 2026 ⋅ 9:30am – 10am",
       "organisateur": "Loïc Vuylsteker",
       "participants": [
         "Loïc Vuylsteker",
@@ -112,29 +177,125 @@
         "Elisabeth Napierala"
       ],
       "sujets_abordes": [
-        "Suivi des projets Data/IA et Supply Chain",
-        "Avancement de l'application Proposition d'Implantation",
-        "Point sur les incidents de production (Stambia, OneStock)",
-        "Stratégie d'automatisation et d'intégration des données"
+        "Revue des projets supply chain et finance",
+        "Validation de l'automatisation via Jira",
+        "Suivi des projets (proposition d'implantation)",
+        "Workflow et planning (règles de passage des statuts Jira, planification RCRCT)",
+        "Optimisation des processus opérationnels (restructuration réunions gouvernance, centralisation documentaire Drive)",
+        "Développements techniques et stocks (correction Streamlit, mise à jour stock)",
+        "Automatisation et analyse financière (compte d'exploitation Snowflake, interface Streamlit)"
       ],
       "ce_que_je_dois_preparer": [
-        "Statut des rejets de commandes Stambia (ECOM_SF_ORDER).",
-        "Statut des erreurs d'import OneStock.",
-        "Point sur l'avancement de l'industrialisation du stock mini magasin (objectif MEP mardi 22/09).",
-        "Préparer une réponse ou un plan d'action concernant la règle d'Annette sur la référence H26ABI.T rouge dans l'application Proposition d'Implantation.",
-        "Connaître l'état du confort de saisie / rechargement du tableau dans l'application Proposition d'Implantation.",
-        "Vérifier le document RIDA sur le Drive (https://drive.google.com/drive/folders/188uyExj1hUBycrQS6HbB4l449eERrbVy).",
-        "Point sur la migration des flux Sidebase/Sybase et le nettoyage d'Opcon (suppression des flux obsolètes).",
-        "Point sur l'intégration des données SAP, Piano et Retail INT (tickets Jira à créer, spécifications techniques).",
-        "Statut de la migration du compte de service Salesforce.",
-        "Point sur la configuration de la récupération des données de stocks deux fois par jour.",
-        "Analyse des outils Piano et ShopperTrak pour identifier leur fonction réelle.",
-        "Mise à jour des tickets Jira liés aux projets Data/IA et Supply."
+        "Mettre à jour tous les tickets Jira, clôturer les tâches terminées et nettoyer le backlog pour qu'il ne reste que les éléments nécessaires sur chaque use case.",
+        "Proposer de l'aide à l'équipe métier pour tester les résultats générés par Snowflake si aucun retour n'est reçu d'ici demain.",
+        "Envoyer un message à Erwan pour confirmer la clôture du budget et discuter du rafraîchissement des stocks.",
+        "Contacter Yazid pour valider si le compteur 33 est toujours utilisé pour les stocks mini.",
+        "Réaliser une étude pour définir le format de sortie pour le PNL.",
+        "Concevoir une interface permettant le dépôt des fichiers SAP par les utilisateurs.",
+        "Organiser une réunion avec Erwan cette semaine pour définir les orientations du projet.",
+        "Soumettre le travail sur Git et demander à Erwan de le relire.",
+        "Vérifier le document RIDA sur le Drive et ajouter les éléments notés."
       ],
-      "contexte_emails_chats": "Le projet Proposition d'Implantation & Gestion Casse sur Snowflake a vu plusieurs évolutions livrées (filtres, indicateur fraîcheur, gestion casse, sélection multiple, indicateurs synthèse). Le rafraîchissement des stocks matin/après-midi est en cours, et l'industrialisation du stock mini magasin avec Erwan vise une MEP le 22/09. Annette Vandamme a soulevé un problème sur la référence H26ABI.T rouge concernant son apparition dans la proposition d'implantation. Le confort de saisie est une priorité ergonomique. Les notes des réunions précédentes (15 sept., 8 sept., 1 sept.) mentionnent la validation de l'automatisation via Jira, la restructuration des réunions de gouvernance Data Supply, la centralisation documentaire dans le Drive, la correction de l'outil Streamlit, la stratégie d'automatisation du compte d'exploitation via Snowflake, la migration urgente des flux Sidebase, le nettoyage d'Opcon, la correction de la table FN Calendrier, l'intégration des données Retail Int, la migration du compte de service Salesforce, et la priorisation de la stabilisation de Stland V2 et l'ingestion SAP/Retail INT. Carine intégrera les points hebdo métier au besoin.",
+      "contexte_emails_chats": "Des problèmes de privilèges Snowflake sur les flux ALIM_FUSION_SNOM, Snow_DEC_DEVISE, SNOW_DEC_OBJECTIF ont été signalés par Roxane CANO et sont en cours de traitement par Erwan Galleron. Une discussion est en cours concernant une connexion Python via service account sur le CA qui sera coupée prochainement. L'annonce de la bascule sur la nouvelle version BO le 28 sept. par Elisabeth Napierala pourrait impacter les reportings. La migration des espaces JIRA est également un sujet d'actualité.",
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a0aea55d2898eaf",
       "source_ref": "Marie DUCORNEY"
+    },
+    {
+      "titre": "WEBINAIRE RH - Régime frais de Santé",
+      "date_heure": "mercredi 7 oct. 2026 ⋅ 11am – 12pm",
+      "organisateur": "Com Interne",
+      "participants": [
+        "Christopher Gilleron"
+      ],
+      "sujets_abordes": [
+        "Nouveaux tarifs 2027 pour la mutuelle et prévoyance",
+        "Rappels sur le réseau Itelis et le régime frais de santé",
+        "Session de questions/réponses"
+      ],
+      "ce_que_je_dois_preparer": [],
+      "contexte_emails_chats": "N/A",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a09063741caffdd",
+      "source_ref": "Com Interne"
+    },
+    {
+      "titre": "Point hebdo - Data/IA - Performance / Synchro Dév. / Data",
+      "date_heure": "mercredi 23 sept. 2026 ⋅ 4pm – 5pm (estimation)",
+      "organisateur": "Loïc Vuylsteker",
+      "participants": [
+        "Loïc Vuylsteker",
+        "Elisabeth Napierala",
+        "Carine DAMMEREY",
+        "Erwan Galleron",
+        "Christopher Gilleron",
+        "Delphine DERACHE",
+        "Capucine POLLET"
+      ],
+      "sujets_abordes": [
+        "Migration de Stland",
+        "Résolution des flux XDI",
+        "Priorités",
+        "Migration et nettoyage des flux (Sidebase, Storland V1/V2)",
+        "Organisation et méthodologie agile (suivi tickets Jira, périmètre réunions techniques)",
+        "Incidents et outils métiers (erreur table FN Calendrier, intégration données Retail Int, gestion incidents)",
+        "Pilotage de la performance Commerce Unifié"
+      ],
+      "ce_que_je_dois_preparer": [
+        "Suivi de la migration de la table FN calendrier vers Sybase et retrait de Storland V2.",
+        "Vérifier l'avancement de l'obtention des accès Tatwin (avec Roxan et Seb).",
+        "Point sur le nettoyage des flux obsolètes Opcon et schémas associés.",
+        "Suivi de la migration du compte de service Salesforce.",
+        "Vérifier le transfert des données FTP vers Azure.",
+        "Préparer les précisions manquantes pour le ticket Retail Int (serveur FTP).",
+        "Point sur la configuration de la récupération des données de stocks (deux fois par jour) et la définition du responsable technique.",
+        "Suivi de l'analyse des outils Piano et ShopperTrak.",
+        "Statut de la stabilisation et migration de Stland V2.",
+        "Statut de la création des tickets Jira pour l'ingestion SAP, Piano et Retail INT.",
+        "Suivi de la configuration des accès SAP (avec Edouard BONIFACE).",
+        "Suivi des spécifications techniques pour l'intégration SAP (avec Edouard BONIFACE et Willy).",
+        "Vérifier la suppression des flux et jobs XDI inutilisés (devise, objectif, client fusion).",
+        "Confirmer que Roxan est informée des flux obsolètes.",
+        "Finaliser la stabilisation et la migration de Stland V2 cette semaine."
+      ],
+      "contexte_emails_chats": "Des problèmes de privilèges Snowflake sur les flux ALIM_FUSION_SNOM, Snow_DEC_DEVISE, SNOW_DEC_OBJECTIF ont été signalés par Roxane CANO et sont en cours de traitement par Erwan Galleron. Une discussion est en cours concernant une connexion Python via service account sur le CA qui sera coupée prochainement. L'annonce de la bascule sur la nouvelle version BO le 28 sept. par Elisabeth Napierala pourrait impacter les reportings. La migration des espaces JIRA est également un sujet d'actualité.",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0867a7b9510748",
+      "source_ref": "Loïc Vuylsteker"
+    },
+    {
+      "titre": "POT DE DEPART",
+      "date_heure": "mardi 29 sept. 2026 ⋅ 5pm – 7pm",
+      "organisateur": "Annette Vandamme",
+      "participants": [
+        "Christopher Gilleron"
+      ],
+      "sujets_abordes": [
+        "Événement social"
+      ],
+      "ce_que_je_dois_preparer": [],
+      "contexte_emails_chats": "N/A",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a060df10eec5291",
+      "source_ref": "Annette Vandamme"
+    },
+    {
+      "titre": "LIVE (SIEGE / DEPOT / SUCC)",
+      "date_heure": "jeudi 5 nov. 2026 ⋅ 9am – 10am",
+      "organisateur": "Com Interne",
+      "participants": [
+        "Christopher Gilleron"
+      ],
+      "sujets_abordes": [
+        "Actualités de l'entreprise",
+        "Initiatives inspirantes",
+        "Questions/réponses"
+      ],
+      "ce_que_je_dois_preparer": [],
+      "contexte_emails_chats": "N/A",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a05815286a32eb7",
+      "source_ref": "Com Interne"
     }
   ]
 }

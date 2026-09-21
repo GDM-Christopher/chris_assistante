@@ -49,9 +49,21 @@ GMAIL_LABELS_FILTER = [
     if label.strip()
 ]
 
-GMAIL_LOOKBACK_HOURS = int(os.getenv("GMAIL_LOOKBACK_HOURS", "48"))
-GOOGLE_CHAT_SPACES = [
+GMAIL_LOOKBACK_HOURS = int(os.getenv("GMAIL_LOOKBACK_HOURS", "72"))
+
+DEFAULT_CHAT_SPACES = [
+    "spaces/AAAAxgmHsuA",  # La DOSI - Equipe Data / IA
+    "spaces/AAAAerZzJKI",  # Roxane, Salim, Céline, Ella, ... (Groupe)
+    "spaces/AAQA5BpGcuU",  # Roxane, Salim, Marine, Laura, ... (Groupe)
+    "spaces/AAQAJNw_z10",  # Roxane, Salim, Elisabeth (Groupe)
+    "spaces/AAAAC5-u9Fw",  # La DOSI - Espace PRO
+    "spaces/AAAAQIFr7uA",  # Exploitation - RUN
+    "spaces/AAQAnKMzDkQ",  # S/4 Incidents PROD - Transition DEV => RUN
+]
+
+_raw_chat_spaces = [
     space.strip()
     for space in os.getenv("GOOGLE_CHAT_SPACES", "").split(",")
     if space.strip()
 ]
+GOOGLE_CHAT_SPACES = _raw_chat_spaces if _raw_chat_spaces else DEFAULT_CHAT_SPACES

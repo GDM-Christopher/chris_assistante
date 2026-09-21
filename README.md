@@ -116,9 +116,10 @@ L'application s'ouvre sur `http://localhost:8501` avec ses **5 onglets opératio
 
 ### 3. Lancer une Ingestion Réelle
 ```powershell
-# Ingestion des 48 dernières heures (boîte complète, chat, réunions)
-python backend/daily_runner.py --hours 48
+# Ingestion des dernières 72h (couvre le week-end, boîte complète, Google Chat et réunions)
+python backend/daily_runner.py --hours 72
 ```
+*Le runner récupère les échanges des salons Google Chat ciblés (dont `La DOSI - Equipe Data / IA`, `La DOSI - Espace PRO`, groupes support), les e-mails récents et les réunions de la semaine, puis extrait une synthèse consolidée avec liens directs vers chaque source.*
 
 ---
 

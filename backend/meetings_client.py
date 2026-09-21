@@ -83,14 +83,20 @@ def fetch_upcoming_meetings(
         messages = res.get("messages", [])
         logger.info(f"{len(messages)} e-mails d'invitations de réunions trouvés dans Gmail.")
 
+        import time
         for msg_meta in messages:
             msg_id = msg_meta["id"]
-            msg = (
-                service_gmail.users()
-                .messages()
-                .get(userId="me", id=msg_id, format="full")
-                .execute()
-            )
+            try:
+                time.sleep(0.05)
+                msg = (
+                    service_gmail.users()
+                    .messages()
+                    .get(userId="me", id=msg_id, format="full")
+                    .execute()
+                )
+            except Exception as get_err:
+                logger.debug(f"Impossible de récupérer l'invitation {msg_id}: {get_err}")
+                continue
 
             headers = {
                 h["name"].lower(): h["value"]

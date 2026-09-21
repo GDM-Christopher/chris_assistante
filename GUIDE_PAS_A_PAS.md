@@ -138,12 +138,17 @@ python backend/daily_runner.py --sample-upload
 ```
 *Le script injecte immédiatement le rapport dans votre table `daily_reports` de Supabase.*
 
-**Option 3 : Exécution complète réelle (Google Workspace -> Gemini -> Supabase)**
+**Option 3 : Exécution complète réelle (Google Workspace -> Gemini -> Supabase / Cache)**
 ```powershell
-# Aspiration intégrale 48h (couvre le week-end, boite complète, chats et réunions)
-python backend/daily_runner.py --hours 48
+# Aspiration intégrale (Gmail, Google Chat et Calendrier / Réunions)
+python backend/daily_runner.py --hours 72
 ```
-*Le script aspire l'intégralité de vos e-mails des 48h (sans aucun filtre de mot-clé), vos salons Google Chat et vos invitations de réunion, confie le tri intelligent à Gemini 2.5 Flash, génère les liens directs vers les sources et sauvegarde le rapport en cache local et dans Supabase.*
+*Le script aspire l'intégralité de vos e-mails récents (sans aucun filtre de mot-clé), vos salons et groupes Google Chat ciblés (`La DOSI - Equipe Data / IA`, `La DOSI - Espace PRO`, groupes `Roxane, Salim...`) grâce au tri chronologique décroissant (`orderBy='createTime desc'`) et vos réunions à venir, confie le tri intelligent à Gemini 2.5 Flash, génère les liens directs vers les sources et sauvegarde le rapport en cache local et dans Supabase.*
+
+> [!TIP]
+> **Gestion intelligente des salons et du week-end :**
+> - **Salons & Groupes configurables :** Vous pouvez lister vos salons et groupes Google Chat dans la variable `GOOGLE_CHAT_SPACES` de votre fichier `.env`. Par défaut, les 5 discussions clés de la DOSI (Data / IA, Espace PRO, groupes de support Roxane/Salim) sont automatiquement interrogées.
+> - **Extension week-end :** Chaque lundi matin, le système étend automatiquement la recherche à 96h pour capturer l'ensemble des déploiements et incidents survenus le vendredi et pendant le week-end (ex: alertes Snowflake de Roxane Cano).
 
 ### 4.4 Lancer le Dashboard Streamlit
 ```powershell

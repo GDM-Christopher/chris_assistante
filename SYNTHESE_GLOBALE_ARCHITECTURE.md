@@ -67,7 +67,7 @@ L'architecture a été conçue pour offrir les performances d'un outil d'entrepr
 flowchart TD
     subgraph Sources ["1. Sources de Données (Dernières 48h)"]
         GMAIL["Gmail API\n(Aspiration intégrale sans filtre)"]
-        GCHAT["Google Chat API\n(20 Espaces d'astreinte & projets)"]
+        GCHAT["Google Chat API\n(Salons & Groupes prioritaires : Data/IA, Espace PRO, Groupes support)\nTri chronologique desc & fenêtrage week-end"]
         GCAL["Invitations d'Agendas\n(Gmail invite.ics & Google Calendar)"]
     end
 
@@ -155,7 +155,7 @@ chris_assistante/
 │   ├── config.py                   # Centralisation des paramètres (ingestion globale 48h, modèles)
 │   ├── google_auth.py              # Authentification multi-modes Google (OAuth2 / Service Account)
 │   ├── gmail_client.py             # Client Gmail (aspiration intégrale 48h, extraction d'URLs web directes)
-│   ├── chat_client.py              # Client Google Chat (balayage des 20 espaces d'astreinte)
+│   ├── chat_client.py              # Client Google Chat (tri 'createTime desc', mapping des groupes & gestion week-end)
 │   ├── meetings_client.py          # Client de capture des réunions et invitations d'agenda
 │   ├── gemini_analyzer.py          # Analyse cognitive Gemini 2.5 Flash avec schémas Pydantic stricts
 │   ├── supabase_client.py          # Client PostgreSQL Supabase (upsert et lecture optimisée)
