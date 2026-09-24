@@ -38,6 +38,10 @@ def upsert_daily_report(report_date: str, raw_summary: Dict[str, Any]) -> bool:
         logger.info(f"Upsert du rapport pour la date {report_date} dans Supabase...")
         res = client.table("daily_reports").upsert(payload, on_conflict="report_date").execute()
         logger.info(f"Rapport sauvegardé avec succès dans Supabase (ID: {res.data[0].get('id') if res.data else 'OK'}).")
+        
+        # Purge automatique des rapports de plus de 30 jours pour ne pas saturer la base
+        purge_old_reports(days_retention=30)
+        
         return True
     except Exception as e:
         logger.warning(
@@ -45,6 +49,24 @@ def upsert_daily_report(report_date: str, raw_summary: Dict[str, Any]) -> bool:
             "Les données réelles restent pleinement accessibles via le cache local latest_report.json."
         )
         return False
+
+
+def purge_old_reports(days_retention: int = 30) -> int:
+    """Supprime automatiquement les rapports antérieurs à 'days_retention' jours."""
+    client = get_supabase_client()
+    if not client:
+        return 0
+    try:
+        import datetime
+        cutoff_date = (datetime.date.today() - datetime.timedelta(days=days_retention)).isoformat()
+        res = client.table("daily_reports").delete().lt("report_date", cutoff_date).execute()
+        count = len(res.data) if res.data else 0
+        if count > 0:
+            logger.info(f"Purge automatique Supabase : {count} rapport(s) antérieur(s) au {cutoff_date} supprimé(s).")
+        return count
+    except Exception as err:
+        logger.debug(f"Avertissement lors de la purge automatique Supabase : {err}")
+        return 0
 
 
 def get_available_dates() -> List[str]:
