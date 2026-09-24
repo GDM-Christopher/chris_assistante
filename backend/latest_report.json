@@ -1,172 +1,342 @@
 {
-  "report_date": "2026-09-21",
+  "report_date": "2026-09-24",
   "statut_global": "Orange",
-  "resume_executif": "Le SI est en statut Orange en raison de plusieurs incidents de production en cours. Des rejets récurrents de commandes Stambia et des erreurs d'import OneStock impactent les flux e-commerce. Des anomalies d'intégration logistique et des problèmes de privilèges sur Snowflake nécessitent une attention immédiate. Parallèlement, la migration des tableaux JIRA est en cours de planification et la bascule vers une nouvelle version de BO est annoncée.",
+  "resume_executif": "Le SI est actuellement en état Orange en raison de multiples incidents de production. Des rejets récurrents du flux Stambia ECOM_SF_ORDER, des erreurs d'import OneStock et des anomalies d'intégration logistique impactent les opérations. Un nouveau produit n'est pas publié sur le site et un plantage du flux SF_ORDER lié à un verrouillage de base de données Oracle est en cours d'investigation. Côté projets, la migration JIRA est finalisée, des corrections majeures ont été apportées au reporting P&L sur Snowflake, et le CA upsell est désormais disponible avec une visualisation du CA Omnicanal en cours de finalisation.",
   "alertes": [
-    "Expiration imminente du mot de passe Salesforce Commerce Cloud de Christopher Gilleron (dans 10 jours)."
+    "Alerte sur des quantités anormales pour les préparations entrepôt (réassort, implantation, dotation) pour le 23/09/2026, concernant les IDs 111,974,10264,10408,11789."
   ],
   "incidents": [
     {
-      "titre": "Rejet récurrent de nouvelles commandes en PRODUCTION (ECOM_SF_ORDER)",
-      "description": "Des rejets ont été créés suite à l'exécution du flux ECOM_SF_ORDER en PRODUCTION. La requête `SELECT * FROM stambia.R_ORDER_GLOBAL;` permet d'afficher les commandes en rejets. Cet incident est récurrent sur les dernières 24-48h.",
+      "titre": "Rejets récurrents commandes e-commerce (Stambia PRODUCTION)",
+      "description": "Multiples rejets de commandes e-commerce suite à l'exécution du flux ECOM_SF_ORDER en PRODUCTION. Les commandes en rejet peuvent être consultées via la table stambia.R_ORDER_GLOBAL.",
       "bdd_impactees": [
         "stambia.R_ORDER_GLOBAL"
       ],
       "flux_impactes": [
         "ECOM_SF_ORDER (Stambia)"
       ],
-      "cause_racine": "Non spécifiée, nécessite une investigation approfondie sur la cause des rejets de commandes.",
-      "solution_technique": "Investigation de la cause racine des rejets et correction des données ou du flux. Suivi des commandes en rejet via `SELECT * FROM stambia.R_ORDER_GLOBAL;`.",
+      "cause_racine": "Non spécifiée, potentiellement liée à des données ou un verrouillage de ressource (cf. ORA-00054 sur SF_ORDER).",
+      "solution_technique": "Vérifier les commandes en rejet via la requête fournie et investiguer la cause racine des rejets.",
       "statut": "En cours",
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0bf76984dbf37b",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0cc992e7f3480d",
       "source_ref": "trt_stambia@graindemalice.com"
     },
     {
-      "titre": "Erreur d'import OneStock: 'endpoints does not exist'",
-      "description": "Problèmes détectés lors de l'import de données dans OneStock, spécifiquement des erreurs de type 'user_import' avec le message 'endpoints does not exist' pour les IDs 00899, 10268, 10267.",
+      "titre": "Erreur d'import de données OneStock",
+      "description": "Problèmes détectés lors de l'import de données dans OneStock, avec des erreurs de type 'user_import' indiquant que des 'endpoints does not exist' pour les IDs 899, 10268, 10267.",
       "bdd_impactees": [],
       "flux_impactes": [
-        "Import de données OneStock (via RUN)"
+        "OneStock data import (user_import)"
       ],
-      "cause_racine": "Fichiers reçus incorrects ou configuration d'endpoints manquante/erronée dans OneStock.",
-      "solution_technique": "Vérifier les fichiers reçus ou contacter le support OneStock.",
+      "cause_racine": "Fichiers reçus invalides ou configuration d'endpoints incorrecte.",
+      "solution_technique": "Vérifier les fichiers source et contacter le support OneStock si nécessaire.",
       "statut": "En cours",
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c1fc2cfe527b8",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0d16f4127f3116",
       "source_ref": "'OneStock' via RUN"
     },
     {
-      "titre": "Anomalies d'intégration logistique (WMS_CTRL_INTEGRATION)",
-      "description": "Le fichier de contrôle de l'intégration des données remontées depuis la logistique signale des anomalies ayant un impact sur les transits magasin, le stock dépôt et les réceptions.",
+      "titre": "Intégration Logistique NOK",
+      "description": "Anomalies dans l'intégration des données remontées depuis la logistique via le flux WMS_CTRL_INTEGRATION. Ces anomalies ont un impact sur les transits magasin, le stock dépôt et les réceptions.",
       "bdd_impactees": [],
       "flux_impactes": [
         "WMS_CTRL_INTEGRATION"
       ],
-      "cause_racine": "Anomalies dans les données remontées depuis la logistique.",
-      "solution_technique": "Traiter les anomalies rapidement pour limiter l'impact sur les opérations.",
+      "cause_racine": "Problèmes dans le fichier de contrôle ou le processus d'intégration.",
+      "solution_technique": "Traiter les anomalies rapidement.",
       "statut": "En cours",
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c272524ecd323",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0d1e547152b445",
       "source_ref": "Notification_DSI@ephigea.com"
     },
     {
-      "titre": "Erreur d'intégration commande Apizr (statusCode: 500)",
-      "description": "Une erreur a été détectée pour la commande 34170347, fichier gdm-order-20260920201832.xml. L'erreur est de type 'Could not execute node 'Cas d'erreur': Failed to contact requester CREATE_CUSTOMER_CARD, statusCode: 500'.",
-      "bdd_impactees": [],
-      "flux_impactes": [
-        "Intégration de commande via Apizr (CREATE_CUSTOMER_CARD)"
-      ],
-      "cause_racine": "Échec de contact avec le service CREATE_CUSTOMER_CARD (erreur 500).",
-      "solution_technique": "Consulter les détails de l'erreur sur Apizr pour investigation et résolution.",
-      "statut": "En cours",
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c0427ec61d5a0",
-      "source_ref": "no-reply@apizr.fr"
-    },
-    {
-      "titre": "Problèmes de privilèges Snowflake sur des flux de données",
-      "description": "Plantages ce week-end sur les flux ALIM_FUSION_SNOM, Snow_DEC_DEVISE, SNOW_DEC_OBJECTIF en raison de privilèges insuffisants (TRUNCATE) pour le rôle RS_XDI_PROD sur les tables T_EVT_CLIENTS_FUSION, T_EVT_DEVISES, T_EVT_OBJECTIF dans GDM_BRONZE_PROD.STORELAND.",
+      "titre": "Nouveauté non publiée sur le site (Storland)",
+      "description": "Une nouvelle référence (H26JUICEIMPK MARRON - 8571807465) ne s'est pas publiée sur le site. Aucune donnée n'est descendue dans Storland.",
       "bdd_impactees": [
-        "GDM_BRONZE_PROD.STORELAND (Snowflake)"
+        "Storland (implicite)"
       ],
       "flux_impactes": [
-        "ALIM_FUSION_SNOM",
-        "Snow_DEC_DEVISE",
-        "SNOW_DEC_OBJECTIF"
+        "Flux de publication produit vers Storland"
       ],
-      "cause_racine": "Privilèges insuffisants (TRUNCATE) pour le rôle RS_XDI_PROD. Erwan Galleron a indiqué que ces jobs seront décommissionnés.",
-      "solution_technique": "Erwan Galleron s'occupe de la situation, les jobs concernés seront arrêtés prochainement.",
-      "statut": "En cours",
-      "source_type": "Google Chat",
-      "source_url": "https://chat.google.com/room/AAAAxgmHsuA",
-      "source_ref": "Roxane CANO"
-    },
-    {
-      "titre": "Commande bloquée (34163375) - Problème point relais / adresse",
-      "description": "La commande 34163375 était bloquée car il manquait le nom et le code du point relais. La cliente a souhaité annuler la commande car elle en avait besoin pour le soir même.",
-      "bdd_impactees": [],
-      "flux_impactes": [
-        "Intégration de commande",
-        "Livraison"
-      ],
-      "cause_racine": "Informations de point relais manquantes ou incorrectes lors de la création de la commande.",
-      "solution_technique": "Commande annulée et remboursée sur Payzen par Ella SAIDI-ROULLEAU. Roxane CANO n'intègre pas la commande.",
-      "statut": "Résolu",
-      "source_type": "Google Chat",
-      "source_url": "https://chat.google.com/room/AAAAerZzJKI",
-      "source_ref": "Ella SAIDI-ROULLEAU"
-    },
-    {
-      "titre": "Commande Zalando non préparée (3618011098564)",
-      "description": "La commande Zalando du 16/09 (ZA-10313214884521) n'est pas visible en préparation.",
-      "bdd_impactees": [],
-      "flux_impactes": [
-        "Préparation de commande (Zalando)"
-      ],
-      "cause_racine": "Non spécifiée, nécessite une investigation.",
-      "solution_technique": "Roxane CANO va investiguer la situation.",
+      "cause_racine": "Problème de propagation de données vers Storland.",
+      "solution_technique": "Salim MOUBARIK est en cours d'investigation.",
       "statut": "En cours",
       "source_type": "Google Chat",
       "source_url": "https://chat.google.com/room/AAQA5BpGcuU",
       "source_ref": "Blandine Vicente"
+    },
+    {
+      "titre": "Plantage flux SF_ORDER (Oracle ORA-00054)",
+      "description": "Plantage du flux SF_ORDER au début de l'étape de troncature de la table STAMBIA.TMP_ORDER_GLOBAL, avec une erreur ORA-00054: resource busy and acquire with NOWAIT specified.",
+      "bdd_impactees": [
+        "Oracle",
+        "STAMBIA.TMP_ORDER_GLOBAL"
+      ],
+      "flux_impactes": [
+        "SF_ORDER"
+      ],
+      "cause_racine": "Verrouillage de la table STAMBIA.TMP_ORDER_GLOBAL par une autre session.",
+      "solution_technique": "Relancer le flux après libération de la ressource. Salim a déjà relancé.",
+      "statut": "En cours",
+      "source_type": "Google Chat",
+      "source_url": "https://chat.google.com/room/AAAAQIFr7uA",
+      "source_ref": "Salim MOUBARIK"
+    },
+    {
+      "titre": "Rejets commandes e-commerce (Stambia RE7)",
+      "description": "Rejets de commandes e-commerce suite à l'exécution du flux ECOM_SF_ORDER en environnement RE7 (test). Les commandes en rejet peuvent être consultées via la table stambia.R_ORDER_GLOBAL.",
+      "bdd_impactees": [
+        "stambia.R_ORDER_GLOBAL"
+      ],
+      "flux_impactes": [
+        "ECOM_SF_ORDER (Stambia)"
+      ],
+      "cause_racine": "Non spécifiée.",
+      "solution_technique": "Vérifier les commandes en rejet via la requête fournie.",
+      "statut": "En cours",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0ceb46362ffdc6",
+      "source_ref": "trt_stambia@graindemalice.com"
     }
   ],
   "projets": [
     {
       "nom_projet": "Migration JIRA",
       "libelle": "JIRA",
-      "actions_realisees": [],
+      "actions_realisees": [
+        "Les tickets des anciens projets JIRA 'GDM' et 'GDM - Octistock' (clés 'GM' et 'GDMO') ont été migrés vers le nouveau projet JIRA 'GDM' (clé 'GDM').",
+        "La nouvelle URL du tableau Kanban est disponible : https://chapsvisiondev.atlassian.net/jira/software/c/projects/GDM/boards/9410."
+      ],
       "decisions": [
-        "Migration des espaces JIRA 'GDM - Stock' vers 'GDM' puis 'GDM' vers un nouvel espace JIRA.",
-        "Harmonisation du workflow de gestion et de suivi des tickets JIRA.",
-        "Choix d'un créneau pour la première étape de migration (Mercredi 23/09 à 10h00 ou 16h00)."
+        "Mise à jour des colonnes et statuts du Board Kanban menée par Emmanuel ESCOURRE.",
+        "Contrôle et mise à jour des informations dans les différents tickets migrés (assigné, statut, sprint, versions, destination..) menée par Philippe NUGIER.",
+        "Aucune action particulière à prévoir côté Grain de Malice."
       ],
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a0c28d1ca7e8d02",
       "source_ref": "Emmanuel ESCOURRE"
     },
     {
-      "nom_projet": "Logistique / Supply Chain",
-      "libelle": "Préparation Entrepôt",
+      "nom_projet": "Reporting P&L",
+      "libelle": "Snowflake, Finance",
       "actions_realisees": [
-        "Reporting d'activité J-1: E-Commerce 15.24% préparé, Dotations 97.33%, Implantation 99.64%, Réassort 97.78%, Autres 5.43%. Total J-1: 88.73% préparé (20728/23360).",
-        "Reporting d'activité J: Total 25362 pièces préparées."
-      ],
-      "decisions": [],
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c1c4043f9f6fc",
-      "source_ref": "Notification_DSI@ephigea.com"
-    },
-    {
-      "nom_projet": "Plan de Continuité Informatique (PCI)",
-      "libelle": "Logistique GDM",
-      "actions_realisees": [
-        "Génération de fichiers de sauvegarde en cas de problème informatique : stocks emplacements Logys GDM, magasins avec jour de départ et transporteur, TOP 100 ventes 7 derniers jours, ventes de la veille pour réassort."
-      ],
-      "decisions": [],
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c0dcb6fe7daac",
-      "source_ref": "Notification_DSI@ephigea.com"
-    },
-    {
-      "nom_projet": "Migration BO",
-      "libelle": "Reporting",
-      "actions_realisees": [
-        "Annonce de la bascule sur la nouvelle version BO lundi 28 sept."
+        "Correction de l'en-tête 'ALL' en 'ALL' (au lieu de 'ALL_TOTAL').",
+        "Ajout d'une notion de 'Période' (mois par mois) dans la base de données pour filtrer les données.",
+        "Création de deux exports distincts en sortie : PNL_MOIS et PNL_YTD.",
+        "Correction des doublons sur certaines lignes (Journal d'audit / Refacturation) en ajustant la logique d'assemblage."
       ],
       "decisions": [
-        "Christopher devra modifier les invitations des planifs dans la nouvelle version pour les changements de région. Elisabeth Napierala apportera son aide si besoin."
+        "Sylvain CURSOUX va planifier une visioconférence pour parcourir les corrections avec Laurena et Yann et s'assurer de l'intégration des nouveaux fichiers."
+      ],
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0ce6bcc3d5c1b5",
+      "source_ref": "Sylvain CURSOUX"
+    },
+    {
+      "nom_projet": "Data CA Omnicanal / Upsell",
+      "libelle": "Data/IA, Reporting",
+      "actions_realisees": [
+        "Le CA upsell est maintenant disponible.",
+        "Capucine est en train de finaliser la visualisation de la décomposition du CA Omnicanal (maquette validée par l'équipe BM)."
+      ],
+      "decisions": [
+        "Carine DAMMEREY a proposé de fournir les éléments du CA upsell en dehors d'une visualisation pour des besoins particuliers (Priscilla, Laurena).",
+        "Capucine reprendra la finalisation de la visualisation à son retour de vacances."
       ],
       "source_type": "Google Chat",
-      "source_url": "https://chat.google.com/room/AAQAJNw_z10",
-      "source_ref": "Elisabeth Napierala"
+      "source_url": "https://chat.google.com/room/AAAAxgmHsuA",
+      "source_ref": "Corinne GERARD / Carine DAMMEREY"
+    },
+    {
+      "nom_projet": "Bug Remises",
+      "libelle": "Data/IA, Jira",
+      "actions_realisees": [
+        "Le ticket Jira DBT-311 '[PAP] Bug remises' a été mis à jour.",
+        "Regis CASIER a réassigné le ticket à Erwan Galleron."
+      ],
+      "decisions": [
+        "Erwan Galleron doit mettre '0' pour la semaine en cours concernant le bug remises."
+      ],
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/19f18d40acc0b7fd",
+      "source_ref": "Regis CASIER (Jira)"
     }
   ],
   "reunions_a_venir": [
     {
+      "titre": "Résa LAB - Formation BO",
+      "date_heure": "jeu. 24 sept. 2026 9am - 5pm",
+      "organisateur": "Elisabeth Napierala",
+      "participants": [
+        "Christopher Gilleron",
+        "Elisabeth Napierala",
+        "Lyazid Guembar",
+        "Chantal Cabusat",
+        "LD_EPH_Dsi",
+        "Sylvain CURSOUX",
+        "Laurent GAQUIERE",
+        "Regis CASIER",
+        "Delphine DERACHE",
+        "Anthony YANG",
+        "Clémentine HAUGER",
+        "Mathieu DEVISE",
+        "Charlotte Devroux",
+        "Maéva GARNIER",
+        "Antoine MANTELLI",
+        "Amandine RIMBERT",
+        "Camille LANGBOUR",
+        "Julien LEMAIRE",
+        "Loïc Vuylsteker",
+        "Salim MOUBARIK",
+        "Antoine MOYON",
+        "Carine DAMMEREY",
+        "Roxane CANO",
+        "Marie DUCORNEY",
+        "Valentin BRONGNIART",
+        "Louis MAILLIET",
+        "Sebastien DEHON",
+        "Jérôme DEGUEHEGNY",
+        "adhondt@graindemalice.com",
+        "Carra LEANG OU",
+        "Alexandre DUTRIAUX",
+        "Maxime Tarrier",
+        "Benoit BOUCHER",
+        "Laurent Maes",
+        "Ruben TER MINASYAN",
+        "Capucine POLLET",
+        "Cédric BERTAUX",
+        "Corentin VERMEULEN",
+        "Amélie Arvor",
+        "Achraf BELAFIA",
+        "Delphine MOISY",
+        "Mael DHALLUIN",
+        "Maxence DELATTRE",
+        "Edouard BONIFACE",
+        "Olivier Lefebvre",
+        "Nabil Boulehrouz",
+        "Willy LOURME",
+        "Corinne GERARD",
+        "Mathieu PLUQUET",
+        "Jérémie Raynal",
+        "Anais AFFLARD"
+      ],
+      "sujets_abordes": [
+        "Formation BO"
+      ],
+      "ce_que_je_dois_preparer": [
+        "Assurer sa présence à la formation BO pour la journée."
+      ],
+      "contexte_emails_chats": "Salim MOUBARIK est en formation BO, ce qui a entraîné l'annulation du point hebdo Run/Exploitation du 24 septembre.",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c2d14439d6764",
+      "source_ref": "Elisabeth Napierala"
+    },
+    {
+      "titre": "Résa LAB - Formation BO",
+      "date_heure": "ven. 25 sept. 2026 9am - 5pm",
+      "organisateur": "Elisabeth Napierala",
+      "participants": [
+        "Christopher Gilleron",
+        "Elisabeth Napierala",
+        "Lyazid Guembar",
+        "Chantal Cabusat",
+        "LD_EPH_Dsi",
+        "Sylvain CURSOUX",
+        "Laurent GAQUIERE",
+        "Regis CASIER",
+        "Delphine DERACHE",
+        "Anthony YANG",
+        "Clémentine HAUGER",
+        "Mathieu DEVISE",
+        "Charlotte Devroux",
+        "Maéva GARNIER",
+        "Antoine MANTELLI",
+        "Amandine RIMBERT",
+        "Camille LANGBOUR",
+        "Julien LEMAIRE",
+        "Loïc Vuylsteker",
+        "Salim MOUBARIK",
+        "Antoine MOYON",
+        "Carine DAMMEREY",
+        "Roxane CANO",
+        "Marie DUCORNEY",
+        "Valentin BRONGNIART",
+        "Louis MAILLIET",
+        "Sebastien DEHON",
+        "Jérôme DEGUEHEGNY",
+        "adhondt@graindemalice.com",
+        "Carra LEANG OU",
+        "Alexandre DUTRIAUX",
+        "Maxime Tarrier",
+        "Benoit BOUCHER",
+        "Laurent Maes",
+        "Ruben TER MINASYAN",
+        "Capucine POLLET",
+        "Cédric BERTAUX",
+        "Corentin VERMEULEN",
+        "Amélie Arvor",
+        "Achraf BELAFIA",
+        "Delphine MOISY",
+        "Mael DHALLUIN",
+        "Maxence DELATTRE",
+        "Edouard BONIFACE",
+        "Olivier Lefebvre",
+        "Nabil Boulehrouz",
+        "Willy LOURME",
+        "Corinne GERARD",
+        "Mathieu PLUQUET",
+        "Jérémie Raynal",
+        "Anais AFFLARD"
+      ],
+      "sujets_abordes": [
+        "Formation BO"
+      ],
+      "ce_que_je_dois_preparer": [
+        "Assurer sa présence à la formation BO pour la journée."
+      ],
+      "contexte_emails_chats": "Suite de la formation BO qui a débuté le jeudi 24 septembre.",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c2d1bf967c320",
+      "source_ref": "Elisabeth Napierala"
+    },
+    {
+      "titre": "Hebdo - Synchro Dév. / Data",
+      "date_heure": "mardi 29 sept. 2026 11am - 12pm",
+      "organisateur": "Elisabeth Napierala",
+      "participants": [
+        "Elisabeth Napierala",
+        "Mathieu DEVISE",
+        "Erwan Galleron",
+        "Christopher Gilleron",
+        "Loïc Vuylsteker",
+        "Edouard BONIFACE",
+        "Julien LEMAIRE",
+        "Achraf BELAFIA",
+        "Ruben TER MINASYAN",
+        "edouard.boniface@cgi.com",
+        "Marie DUCORNEY",
+        "Alexandre DUTRIAUX"
+      ],
+      "sujets_abordes": [
+        "Synchro Dév. / Data",
+        "RIDA"
+      ],
+      "ce_que_je_dois_preparer": [
+        "Prendre connaissance des notes de la réunion du 22 sept. concernant la réorganisation du backlog, la priorisation du projet OMS, les contraintes de ressources, l'intégration et la traçabilité des données de fidélité.",
+        "Préparer un point sur les tickets d'ingestion et d'analyse engineering (Marie DUCORNEY doit communiquer leur centralisation dans les épiques dédiées).",
+        "Être prêt à discuter de l'organisation et du staffing OMS (Loïc Vuylsteker doit discuter avec Corinne et Erwan).",
+        "Vérifier le statut des tickets en pause (Edouard BONIFACE, Loïc Vuylsteker doivent ajouter un flag dépriorisé).",
+        "Consulter le schéma architectural de la plateforme de données (Loïc Vuylsteker doit demander à Jérôme)."
+      ],
+      "contexte_emails_chats": "Marie DUCORNEY a ajouté le RIDA aux invitations. La réunion précédente a abordé la réorganisation du backlog, la priorisation du projet OMS, les contraintes de ressources, l'intégration des données de fidélité et la traçabilité dans Snowflake. Des actions ont été définies pour Marie, Erwan, Loïc, Edouard concernant la gestion des tickets, le staffing OMS, la rétention des données et l'architecture.",
+      "source_type": "Gmail",
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c9106aa310d57",
+      "source_ref": "Marie DUCORNEY"
+    },
+    {
       "titre": "Hebdo - Data/IA - Supply",
-      "date_heure": "mardi 22 sept. 2026 ⋅ 9:30am – 10am",
+      "date_heure": "mardi 29 sept. 2026 9:30am - 10:15am",
       "organisateur": "Loïc Vuylsteker",
       "participants": [
         "Loïc Vuylsteker",
@@ -177,33 +347,26 @@
         "Elisabeth Napierala"
       ],
       "sujets_abordes": [
-        "Revue des projets supply chain et finance",
-        "Validation de l'automatisation via Jira",
-        "Suivi des projets (proposition d'implantation)",
-        "Workflow et planning (règles de passage des statuts Jira, planification RCRCT)",
-        "Optimisation des processus opérationnels (restructuration réunions gouvernance, centralisation documentaire Drive)",
-        "Développements techniques et stocks (correction Streamlit, mise à jour stock)",
-        "Automatisation et analyse financière (compte d'exploitation Snowflake, interface Streamlit)"
+        "Data/IA",
+        "Supply Chain"
       ],
       "ce_que_je_dois_preparer": [
-        "Mettre à jour tous les tickets Jira, clôturer les tâches terminées et nettoyer le backlog pour qu'il ne reste que les éléments nécessaires sur chaque use case.",
-        "Proposer de l'aide à l'équipe métier pour tester les résultats générés par Snowflake si aucun retour n'est reçu d'ici demain.",
-        "Envoyer un message à Erwan pour confirmer la clôture du budget et discuter du rafraîchissement des stocks.",
-        "Contacter Yazid pour valider si le compteur 33 est toujours utilisé pour les stocks mini.",
-        "Réaliser une étude pour définir le format de sortie pour le PNL.",
-        "Concevoir une interface permettant le dépôt des fichiers SAP par les utilisateurs.",
-        "Organiser une réunion avec Erwan cette semaine pour définir les orientations du projet.",
-        "Soumettre le travail sur Git et demander à Erwan de le relire.",
-        "Vérifier le document RIDA sur le Drive et ajouter les éléments notés."
+        "Prendre connaissance des notes des réunions du 15 et 22 sept. : rafraîchissement des données de stock (objectif 15 min), double rafraîchissement Snowflake, correction des sources Winnie Wig/Windle, flux manquant vers Snowflake, finalisation PNL, correction d'inventaire en standby.",
+        "Préparer un point sur le statut du code stock mini magasin (Sylvain CURSOUX doit pousser les modifications).",
+        "Confirmer les détails du double rafraîchissement des données de stock (Sylvain CURSOUX).",
+        "Mettre à jour le ticket Jira relatif au projet PNL (Sylvain CURSOUX).",
+        "Envoyer le rapport global d'étude sur l'inventaire à Marie DUCORNEY (Sylvain CURSOUX).",
+        "Discuter avec Erwan de l'état de la carte dédiée au stock mini (Sylvain CURSOUX).",
+        "Consolider les tâches PnL dans Jira (Sylvain CURSOUX)."
       ],
-      "contexte_emails_chats": "Des problèmes de privilèges Snowflake sur les flux ALIM_FUSION_SNOM, Snow_DEC_DEVISE, SNOW_DEC_OBJECTIF ont été signalés par Roxane CANO et sont en cours de traitement par Erwan Galleron. Une discussion est en cours concernant une connexion Python via service account sur le CA qui sera coupée prochainement. L'annonce de la bascule sur la nouvelle version BO le 28 sept. par Elisabeth Napierala pourrait impacter les reportings. La migration des espaces JIRA est également un sujet d'actualité.",
+      "contexte_emails_chats": "Les réunions précédentes ont couvert le rafraîchissement des données de stock, les erreurs d'architecture de flux (Winnie Wig, Windle, Snowflake), et l'avancement des sujets PNL et stock. L'automatisation de la proposition d'implantation est terminée et validée.",
       "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0aea55d2898eaf",
-      "source_ref": "Marie DUCORNEY"
+      "source_url": "https://mail.google.com/mail/u/0/#all/1a0c2e7e5a346900",
+      "source_ref": "Loïc Vuylsteker"
     },
     {
       "titre": "WEBINAIRE RH - Régime frais de Santé",
-      "date_heure": "mercredi 7 oct. 2026 ⋅ 11am – 12pm",
+      "date_heure": "mer. 7 oct. 2026 11am - 12pm",
       "organisateur": "Com Interne",
       "participants": [
         "Christopher Gilleron"
@@ -213,88 +376,12 @@
         "Rappels sur le réseau Itelis et le régime frais de santé",
         "Session de questions/réponses"
       ],
-      "ce_que_je_dois_preparer": [],
-      "contexte_emails_chats": "N/A",
+      "ce_que_je_dois_preparer": [
+        "Aucune préparation technique spécifique n'est requise."
+      ],
+      "contexte_emails_chats": "Webinaire d'information RH sur les évolutions du régime de frais de santé chez Grain de Malice.",
       "source_type": "Gmail",
       "source_url": "https://mail.google.com/mail/u/0/#all/1a09063741caffdd",
-      "source_ref": "Com Interne"
-    },
-    {
-      "titre": "Point hebdo - Data/IA - Performance / Synchro Dév. / Data",
-      "date_heure": "mercredi 23 sept. 2026 ⋅ 4pm – 5pm (estimation)",
-      "organisateur": "Loïc Vuylsteker",
-      "participants": [
-        "Loïc Vuylsteker",
-        "Elisabeth Napierala",
-        "Carine DAMMEREY",
-        "Erwan Galleron",
-        "Christopher Gilleron",
-        "Delphine DERACHE",
-        "Capucine POLLET"
-      ],
-      "sujets_abordes": [
-        "Migration de Stland",
-        "Résolution des flux XDI",
-        "Priorités",
-        "Migration et nettoyage des flux (Sidebase, Storland V1/V2)",
-        "Organisation et méthodologie agile (suivi tickets Jira, périmètre réunions techniques)",
-        "Incidents et outils métiers (erreur table FN Calendrier, intégration données Retail Int, gestion incidents)",
-        "Pilotage de la performance Commerce Unifié"
-      ],
-      "ce_que_je_dois_preparer": [
-        "Suivi de la migration de la table FN calendrier vers Sybase et retrait de Storland V2.",
-        "Vérifier l'avancement de l'obtention des accès Tatwin (avec Roxan et Seb).",
-        "Point sur le nettoyage des flux obsolètes Opcon et schémas associés.",
-        "Suivi de la migration du compte de service Salesforce.",
-        "Vérifier le transfert des données FTP vers Azure.",
-        "Préparer les précisions manquantes pour le ticket Retail Int (serveur FTP).",
-        "Point sur la configuration de la récupération des données de stocks (deux fois par jour) et la définition du responsable technique.",
-        "Suivi de l'analyse des outils Piano et ShopperTrak.",
-        "Statut de la stabilisation et migration de Stland V2.",
-        "Statut de la création des tickets Jira pour l'ingestion SAP, Piano et Retail INT.",
-        "Suivi de la configuration des accès SAP (avec Edouard BONIFACE).",
-        "Suivi des spécifications techniques pour l'intégration SAP (avec Edouard BONIFACE et Willy).",
-        "Vérifier la suppression des flux et jobs XDI inutilisés (devise, objectif, client fusion).",
-        "Confirmer que Roxan est informée des flux obsolètes.",
-        "Finaliser la stabilisation et la migration de Stland V2 cette semaine."
-      ],
-      "contexte_emails_chats": "Des problèmes de privilèges Snowflake sur les flux ALIM_FUSION_SNOM, Snow_DEC_DEVISE, SNOW_DEC_OBJECTIF ont été signalés par Roxane CANO et sont en cours de traitement par Erwan Galleron. Une discussion est en cours concernant une connexion Python via service account sur le CA qui sera coupée prochainement. L'annonce de la bascule sur la nouvelle version BO le 28 sept. par Elisabeth Napierala pourrait impacter les reportings. La migration des espaces JIRA est également un sujet d'actualité.",
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a0867a7b9510748",
-      "source_ref": "Loïc Vuylsteker"
-    },
-    {
-      "titre": "POT DE DEPART",
-      "date_heure": "mardi 29 sept. 2026 ⋅ 5pm – 7pm",
-      "organisateur": "Annette Vandamme",
-      "participants": [
-        "Christopher Gilleron"
-      ],
-      "sujets_abordes": [
-        "Événement social"
-      ],
-      "ce_que_je_dois_preparer": [],
-      "contexte_emails_chats": "N/A",
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a060df10eec5291",
-      "source_ref": "Annette Vandamme"
-    },
-    {
-      "titre": "LIVE (SIEGE / DEPOT / SUCC)",
-      "date_heure": "jeudi 5 nov. 2026 ⋅ 9am – 10am",
-      "organisateur": "Com Interne",
-      "participants": [
-        "Christopher Gilleron"
-      ],
-      "sujets_abordes": [
-        "Actualités de l'entreprise",
-        "Initiatives inspirantes",
-        "Questions/réponses"
-      ],
-      "ce_que_je_dois_preparer": [],
-      "contexte_emails_chats": "N/A",
-      "source_type": "Gmail",
-      "source_url": "https://mail.google.com/mail/u/0/#all/1a05815286a32eb7",
       "source_ref": "Com Interne"
     }
   ]
